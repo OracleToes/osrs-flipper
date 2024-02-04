@@ -19,7 +19,7 @@ public sealed class Flipper : IDisposable
         ItemMapping? mapping = await _api.GetItemMapping();
         if (mapping != null)
         {
-            Console.WriteLine($"Got {mapping.Count} items");
+            Console.WriteLine($"Loaded {mapping.Count} items");
             foreach (ItemData itemData in mapping.GetAllItemData())
             {
                 Console.WriteLine($"Item: {itemData.Id} - {itemData.Name}");
@@ -27,7 +27,7 @@ public sealed class Flipper : IDisposable
         }
         else
         {
-            Console.WriteLine("Failed to get item mapping");
+            Console.WriteLine("Failed to load item mappings");
         }
     }
 
