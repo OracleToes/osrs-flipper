@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsrsFlipper", "OsrsFlipper\OsrsFlipper.csproj", "{01932BEB-B41E-48D1-B43C-054DE55B0C06}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeveloperClient", "DeveloperClient\DeveloperClient.csproj", "{00B8AFAE-9293-41A9-BAE0-7C9C8FA47A1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordClient", "DiscordClient\DiscordClient.csproj", "{32081578-635D-4B4E-89F3-45AC64E691D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{01932BEB-B41E-48D1-B43C-054DE55B0C06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01932BEB-B41E-48D1-B43C-054DE55B0C06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01932BEB-B41E-48D1-B43C-054DE55B0C06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00B8AFAE-9293-41A9-BAE0-7C9C8FA47A1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B8AFAE-9293-41A9-BAE0-7C9C8FA47A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B8AFAE-9293-41A9-BAE0-7C9C8FA47A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B8AFAE-9293-41A9-BAE0-7C9C8FA47A1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32081578-635D-4B4E-89F3-45AC64E691D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32081578-635D-4B4E-89F3-45AC64E691D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32081578-635D-4B4E-89F3-45AC64E691D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32081578-635D-4B4E-89F3-45AC64E691D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
