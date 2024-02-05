@@ -3,7 +3,7 @@ using RestSharp;
 
 namespace OsrsFlipper.Api;
 
-public class LatestPriceApi : Api<ItemLatestPriceDataCollection>
+public class LatestPriceApi : OsrsApi<ItemLatestPriceDataCollection>
 {
     private readonly RestRequest _requestLatest;
     

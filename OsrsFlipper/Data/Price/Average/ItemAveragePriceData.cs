@@ -5,17 +5,14 @@ namespace OsrsFlipper.Data.Price.Average;
 public class ItemAveragePriceData
 {
     [JsonPropertyName("avgHighPrice")]
-    private int? AverageHigh { get; set; }
+    public int? AverageHighPrice { get; set; }
 
     [JsonPropertyName("highPriceVolume")]
-    private int? HighVolume { get; set; }
+    public int? HighVolume { get; set; }
 
     [JsonPropertyName("avgLowPrice")]
-    private int? AverageLow { get; set; }
+    public int? AverageLowPrice { get; set; }
 
     [JsonPropertyName("lowPriceVolume")]
-    private int? LowVolume { get; set; }
-    
-    [JsonIgnore]
-    public bool IsValid => AverageHigh.HasValue && HighVolume.HasValue && AverageLow.HasValue && LowVolume.HasValue;
+    public int? LowVolume { get; set; }
 }

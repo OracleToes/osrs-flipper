@@ -20,8 +20,5 @@ public class ItemPriceHistoryEntry
     public int? LowPriceVolume { get; set; }
     
     [JsonIgnore]
-    public bool IsValid => TimestampUnix.HasValue && AvgHighPrice.HasValue && AvgLowPrice.HasValue && HighPriceVolume.HasValue && LowPriceVolume.HasValue;
-    
-    [JsonIgnore]
     public DateTime Timestamp => Utils.UnixTimeToDateTime(TimestampUnix!.Value);
 }

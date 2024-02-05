@@ -1,4 +1,5 @@
-﻿using OsrsFlipper.Api;
+﻿using System.Globalization;
+using OsrsFlipper.Api;
 
 namespace OsrsFlipper;
 
@@ -23,5 +24,13 @@ internal static class Utils
             TimeSeriesApi.TimeSeriesTimeStep.Day => "24h",
             _ => throw new ArgumentOutOfRangeException(nameof(timeStep), timeStep, null)
         };
+    }
+
+
+    public static string SeparateThousands(this int value)
+    {
+        NumberFormatInfo largeNumberFormat = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+        largeNumberFormat.NumberGroupSeparator = " ";
+        return value.ToString("#,0", largeNumberFormat);
     }
 }

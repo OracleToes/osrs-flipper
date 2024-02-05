@@ -15,5 +15,5 @@ public class ItemMapping
     
     public bool TryGetItemData(int itemId, out ItemData itemData) => _data.TryGetValue(itemId, out itemData!);
     
-    public IEnumerable<ItemData> GetAllItemData() => _data.Values;
+    public IEnumerable<ItemData> ItemData() => _data.Values;
 }

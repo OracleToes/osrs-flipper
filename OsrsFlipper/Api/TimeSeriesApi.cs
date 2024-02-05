@@ -4,7 +4,7 @@ using RestSharp;
 
 namespace OsrsFlipper.Api;
 
-public class TimeSeriesApi : Api<ItemPriceHistory>
+public class TimeSeriesApi : OsrsApi<ItemPriceHistory>
 {
     public enum TimeSeriesTimeStep
     {

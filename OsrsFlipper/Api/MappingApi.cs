@@ -3,7 +3,7 @@ using RestSharp;
 
 namespace OsrsFlipper.Api;
 
-public class MappingApi : Api<List<ItemData>>
+public class MappingApi : OsrsApi<List<ItemData>>
 {
     private readonly RestRequest _request;
     

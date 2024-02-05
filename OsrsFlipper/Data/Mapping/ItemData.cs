@@ -19,6 +19,10 @@ public class ItemData
     [JsonPropertyName("lowalch")]
     public int LowAlchemyValue { get; init; }
     
+    /// <summary>
+    /// How many of this item can be bought every 4 hours.
+    /// Check <see cref="HasBuyLimit"/> before using this value.
+    /// </summary>
     [JsonPropertyName("limit")]
     public int GeBuyLimit { get; init; }
     
@@ -33,7 +37,15 @@ public class ItemData
 
     [JsonPropertyName("name")]
     public string Name { get; init; } = null!;
+    
+    public bool HasBuyLimit => GeBuyLimit != 0;
 
     
     public string GetImageUrl() => Path.Combine(Configuration.OSRS_ITEM_IMAGE_URL, IconFilename);
+
+
+    public override string ToString()
+    {
+        return $"{Name} - {Id}";
+    }
 }
