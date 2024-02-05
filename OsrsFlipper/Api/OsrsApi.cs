@@ -1,5 +1,6 @@
 ﻿using OsrsFlipper.Data.Mapping;
-using OsrsFlipper.Data.Price;
+using OsrsFlipper.Data.Price.Average;
+using OsrsFlipper.Data.Price.Latest;
 using OsrsFlipper.Data.TimeSeries;
 using RestSharp;
 
@@ -10,7 +11,8 @@ internal class OsrsApi : IDisposable
     private const string USER_AGENT = "OSRS flipping tool - @Japsuu on Discord";
     
     private readonly RestClient _client;
-    private readonly PriceApi _priceApi;
+    private readonly LatestPriceApi _latestPriceApi;
+    private readonly AveragePriceApi _averagePriceApi;
     private readonly MappingApi _mappingApi;
     private readonly TimeSeriesApi _timeSeriesApi;
 
@@ -23,15 +25,16 @@ internal class OsrsApi : IDisposable
         };
         _client = new RestClient(options);
         
-        _priceApi = new PriceApi();
+        _latestPriceApi = new LatestPriceApi();
+        _averagePriceApi = new AveragePriceApi();
         _mappingApi = new MappingApi();
         _timeSeriesApi = new TimeSeriesApi();
     }
     
     
-    public async Task<ItemPriceDataCollection?> GetLatestPrices() => await _priceApi.GetLatest(_client);
-    public async Task<ItemPriceDataCollection?> Get5MinAveragePrices() => await _priceApi.Get5MinAverage(_client);
-    public async Task<ItemPriceDataCollection?> Get1HourAveragePrices() => await _priceApi.Get1HourAverage(_client);
+    public async Task<ItemLatestPriceDataCollection?> GetLatestPrices() => await _latestPriceApi.GetLatest(_client);
+    public async Task<ItemAveragePriceDataCollection?> Get5MinAveragePrices() => await _averagePriceApi.Get5MinAverage(_client);
+    public async Task<ItemAveragePriceDataCollection?> Get1HourAveragePrices() => await _averagePriceApi.Get1HourAverage(_client);
     public async Task<ItemMapping?> GetItemMapping() => await _mappingApi.GetMapping(_client);
     public async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesApi.TimeSeriesTimeStep timestep) => await _timeSeriesApi.GetPriceHistory(_client, item, timestep);
 

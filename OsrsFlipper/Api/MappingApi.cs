@@ -3,7 +3,7 @@ using RestSharp;
 
 namespace OsrsFlipper.Api;
 
-public class MappingApi
+public class MappingApi : Api<List<ItemData>>
 {
     private readonly RestRequest _request;
     
@@ -16,21 +16,7 @@ public class MappingApi
 
     public async Task<ItemMapping?> GetMapping(RestClient client)
     {
-        RestResponse<List<ItemData>> response = await client.ExecuteAsync<List<ItemData>>(_request);
-        if (response.IsSuccessful)
-        {
-            if (response.Data != null)
-            {
-                return new ItemMapping(response.Data);
-            }
-
-            Logger.Warn("Failed to deserialize latest item data mapping response");
-        }
-        else
-        {
-            Logger.Error($"Failed to get latest item data mapping: {response.ErrorMessage}");
-        }
-        
-        return null;
+        List<ItemData>? result = await ExecuteRequest(client, _request);
+        return result != null ? new ItemMapping(result) : null;
     }
 }

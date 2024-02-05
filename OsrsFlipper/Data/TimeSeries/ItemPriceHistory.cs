@@ -8,11 +8,5 @@ namespace OsrsFlipper.Data.TimeSeries;
 public class ItemPriceHistory
 {
     [JsonPropertyName("data")]
-    public List<ItemPriceHistoryEntry>? Data { get; }
-    
-    
-    public ItemPriceHistory(List<ItemPriceHistoryEntry>? data)
-    {
-        Data = data;
-    }
+    public List<ItemPriceHistoryEntry> Data { get; set; } = null!;
 }

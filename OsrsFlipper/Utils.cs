@@ -20,7 +20,7 @@ internal static class Utils
             TimeSeriesApi.TimeSeriesTimeStep.FiveMinutes => "5m",
             TimeSeriesApi.TimeSeriesTimeStep.Hour => "1h",
             TimeSeriesApi.TimeSeriesTimeStep.SixHours => "6h",
-            TimeSeriesApi.TimeSeriesTimeStep.Day => "24d",
+            TimeSeriesApi.TimeSeriesTimeStep.Day => "24h",
             _ => throw new ArgumentOutOfRangeException(nameof(timeStep), timeStep, null)
         };
     }

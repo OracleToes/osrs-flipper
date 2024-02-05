@@ -4,7 +4,7 @@ using RestSharp;
 
 namespace OsrsFlipper.Api;
 
-public class TimeSeriesApi
+public class TimeSeriesApi : Api<ItemPriceHistory>
 {
     public enum TimeSeriesTimeStep
     {
@@ -27,21 +27,6 @@ public class TimeSeriesApi
         _request.AddQueryParameter("id", item.Id.ToString());
         _request.AddQueryParameter("timestep", timestep.AsString());
         
-        RestResponse<ItemPriceHistory> response = await client.ExecuteAsync<ItemPriceHistory>(_request);
-        if (response.IsSuccessful)
-        {
-            if (response.Data != null)
-            {
-                return response.Data;
-            }
-
-            Logger.Warn("Failed to deserialize item price history response");
-        }
-        else
-        {
-            Logger.Error($"Failed to get item price history: {response.ErrorMessage}");
-        }
-        
-        return null;
+        return await ExecuteRequest(client, _request);
     }
 }

@@ -5,46 +5,23 @@ namespace OsrsFlipper.Data.TimeSeries;
 public class ItemPriceHistoryEntry
 {
     [JsonPropertyName("timestamp")]
-    public string TimestampStr { get; }
+    public long? TimestampUnix { get; set; }
 
     [JsonPropertyName("avgHighPrice")]
-    public string AvgHighPriceStr { get; }
+    public int? AvgHighPrice { get; set; }
 
     [JsonPropertyName("avgLowPrice")]
-    public string AvgLowPriceStr { get; }
+    public int? AvgLowPrice { get; set; }
 
     [JsonPropertyName("highPriceVolume")]
-    public string HighPriceVolumeStr { get; }
+    public int? HighPriceVolume { get; set; }
 
     [JsonPropertyName("lowPriceVolume")]
-    public string LowPriceVolumeStr { get; }
-
-
-    public ItemPriceHistoryEntry(string timestampStr, string avgHighPriceStr, string avgLowPriceStr, string highPriceVolumeStr, string lowPriceVolumeStr)
-    {
-        TimestampStr = timestampStr;
-        AvgHighPriceStr = avgHighPriceStr;
-        AvgLowPriceStr = avgLowPriceStr;
-        HighPriceVolumeStr = highPriceVolumeStr;
-        LowPriceVolumeStr = lowPriceVolumeStr;
-    }
-
-
-    public bool TryGetTimestamp(out DateTime timestamp)
-    {
-        if (!long.TryParse(TimestampStr, out long timestampUnix))
-        {
-            timestamp = default;
-            return false;
-        }
-        
-        timestamp = Utils.UnixTimeToDateTime(timestampUnix);
-        return true;
-    }
+    public int? LowPriceVolume { get; set; }
     
+    [JsonIgnore]
+    public bool IsValid => TimestampUnix.HasValue && AvgHighPrice.HasValue && AvgLowPrice.HasValue && HighPriceVolume.HasValue && LowPriceVolume.HasValue;
     
-    public bool TryGetAvgHighPrice(out int avgHighPrice) => int.TryParse(AvgHighPriceStr, out avgHighPrice);
-    public bool TryGetAvgLowPrice(out int avgLowPrice) => int.TryParse(AvgLowPriceStr, out avgLowPrice);
-    public bool TryGetHighPriceVolume(out int highPriceVolume) => int.TryParse(HighPriceVolumeStr, out highPriceVolume);
-    public bool TryGetLowPriceVolume(out int lowPriceVolume) => int.TryParse(LowPriceVolumeStr, out lowPriceVolume);
+    [JsonIgnore]
+    public DateTime Timestamp => Utils.UnixTimeToDateTime(TimestampUnix!.Value);
 }
