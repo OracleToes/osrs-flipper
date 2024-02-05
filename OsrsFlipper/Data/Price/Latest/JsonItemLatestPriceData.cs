@@ -2,7 +2,7 @@
 
 namespace OsrsFlipper.Data.Price.Latest;
 
-public class ItemLatestPriceData
+public class JsonItemLatestPriceData
 {
     [JsonPropertyName("high")]
     public int? HighPrice { get; set; }

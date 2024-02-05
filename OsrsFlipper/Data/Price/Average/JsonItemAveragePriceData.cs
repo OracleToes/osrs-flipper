@@ -2,7 +2,7 @@
 
 namespace OsrsFlipper.Data.Price.Average;
 
-public class ItemAveragePriceData
+public class JsonItemAveragePriceData
 {
     [JsonPropertyName("avgHighPrice")]
     public int? AverageHighPrice { get; set; }

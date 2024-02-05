@@ -3,7 +3,6 @@ using OsrsFlipper.Caching;
 using OsrsFlipper.Data.Mapping;
 using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
-using OsrsFlipper.Data.TimeSeries;
 
 namespace OsrsFlipper;
 
@@ -11,6 +10,7 @@ public sealed class Flipper : IDisposable
 {
     private readonly OsrsApiController _apiController;
     private readonly ItemCache _cache;
+    private readonly CooldownManager _cooldownManager = new();
 
 
     private Flipper(OsrsApiController apiController, ItemCache cache)
@@ -33,76 +33,44 @@ public sealed class Flipper : IDisposable
     }
     
     
-    public List<ItemFlip> FindFlips()
+    public async Task<List<ItemFlip>> FindDumps()
     {
         List<ItemFlip> flips = new();
         
         foreach (CacheEntry entry in _cache.Entries())
         {
-            ItemFlip? flip = IsFlip(entry);
+            if (_cooldownManager.IsOnCooldown(entry.Item.Id))
+                continue;
+            ItemFlip? flip = await TryGetFlip(entry);
             if (flip != null)
+            {
                 flips.Add(flip);
+                _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(2));
+            }
         }
         
         return flips;
     }
     
     
-    private static ItemFlip? IsFlip(CacheEntry entry)
+    private static async Task<ItemFlip?> TryGetFlip(CacheEntry entry)
     {
-        /*// Skip if the item has not been traded enough in the last hour
-        if (entry.InstaBuyCountLastHour < 10 || entry.InstaSellCountLastHour < 10)
-            return null;*/
-        
-        //TODO: Check if item is on cooldown
-        
-        // Skip if item price is under 200gp
-        if (entry.AverageInstaBuyPriceLast24Hours < 200 || entry.AverageInstaSellPriceLast24Hours < 200)
-            return null;
-        
-        // Skip if the data is too old
-        if (entry.LastInstaBuyTime < DateTime.Now.AddMinutes(-5) || entry.LastInstaSellTime < DateTime.Now.AddMinutes(-2))
-            return null;
-        
-        // Calculate current margin
-        int margin = entry.InstaBuyPrice - entry.InstaSellPrice;
-        
-        // Calculate the return of investment percentage
-        double returnOfInvestment = margin / (double)entry.InstaSellPrice * 100;
-
-        // Skip if ROI is less than 10%
-        if (returnOfInvestment < 10)
+        const double minPriceDropPercentage = 15 / 100.0;
+        if (!entry.IsFlippable())
             return null;
         
         // Calculate the potential profit
-        int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
+        int? potentialProfit = entry.Item.HasBuyLimit ? entry.PriceLatest.MarginWithTax * entry.Item.GeBuyLimit : null;
         
         // Skip if potential profit is less than 100k
         if (potentialProfit is < 100_000)
             return null;
         
-        // Calculate how much the price normally fluctuates
-        int standardFluctuation = entry.AverageInstaBuyPriceLastHour - entry.AverageInstaSellPriceLastHour;
-        
-        // Get the fluctuation as a percentage of the buy price
-        double standardFluctuationPercentage = standardFluctuation / (double)entry.AverageInstaBuyPriceLastHour * 100;
-        
-        // Skip if the fluctuation is more than 5%, to get rid of items that are too volatile
-        if (standardFluctuationPercentage > 5)
+        // Check that the lowest component of the latest price has dropped minPriceDropPercentage or more, compared to the last 5 minute average price.
+        if (entry.PriceLatest.LowestPrice > entry.Price5MinAverage.AveragePrice * (1.0 - minPriceDropPercentage))
             return null;
         
-        // Detect if the item has just dropped in price (crashed/dumped), to avoid buying items that are on a downtrend.
-        bool isSellCrash = entry.InstaSellPrice < entry.AverageInstaSellPriceLastHour * 0.85;
-        bool isSellRecent = entry.LastInstaBuyTime >= DateTime.Now.AddMinutes(-2);
-        if (isSellCrash && isSellRecent)
-            return new ItemFlip(entry.Item, potentialProfit, returnOfInvestment);
-
-        bool isBuyCrash = entry.InstaBuyPrice < entry.AverageInstaBuyPriceLastHour * 0.85;
-        bool isBuyRecent = entry.LastInstaSellTime >= DateTime.Now.AddMinutes(-2);
-        if (isBuyCrash && isBuyRecent)
-            return new ItemFlip(entry.Item, potentialProfit, returnOfInvestment);
-        
-        return null;
+        return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
     }
     
     
@@ -112,25 +80,31 @@ public sealed class Flipper : IDisposable
         if (latestPrices != null)
             _cache.UpdateLatestPrices(latestPrices);
         else
-            throw new Exception("Failed to load latest prices");
+            Logger.Warn("Failed to load latest prices");
         
         ItemAveragePriceDataCollection? average5MinPrices = await _apiController.Get5MinAveragePrices();
         if (average5MinPrices != null)
             _cache.Update5MinAveragePrices(average5MinPrices);
         else
-            throw new Exception("Failed to load 5 minute average prices");
+            Logger.Warn("Failed to load 5 minute average prices");
         
         ItemAveragePriceDataCollection? average1HourPrices = await _apiController.Get1HourAveragePrices();
         if (average1HourPrices != null)
             _cache.Update1HourAveragePrices(average1HourPrices);
         else
-            throw new Exception("Failed to load 1 hour average prices");
+            Logger.Warn("Failed to load 1 hour average prices");
+        
+        ItemAveragePriceDataCollection? average6HourPrices = await _apiController.Get6HourAveragePrices();
+        if (average6HourPrices != null)
+            _cache.Update6HourAveragePrices(average6HourPrices);
+        else
+            Logger.Warn("Failed to load 6 hour average prices");
         
         ItemAveragePriceDataCollection? average24HourPrices = await _apiController.Get24HourAveragePrices();
         if (average24HourPrices != null)
             _cache.Update24HourAveragePrices(average24HourPrices);
         else
-            throw new Exception("Failed to load 24 hour average prices");
+            Logger.Warn("Failed to load 24 hour average prices");
     }
 
 

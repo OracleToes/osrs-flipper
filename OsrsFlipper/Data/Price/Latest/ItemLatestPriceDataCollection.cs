@@ -11,5 +11,5 @@ public class ItemLatestPriceDataCollection
     /// Osrs item price data by item id.
     /// </summary>
     [JsonPropertyName("data")]
-    public Dictionary<int, ItemLatestPriceData> Data { get; set; } = null!;
+    public Dictionary<int, JsonItemLatestPriceData> Data { get; set; } = null!;
 }

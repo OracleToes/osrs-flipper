@@ -4,89 +4,137 @@ using OsrsFlipper.Data.Price.Latest;
 
 namespace OsrsFlipper.Caching;
 
+public class LatestPriceData
+{
+    /// <summary>
+    /// The item can be instantly bought for this price.
+    /// </summary>
+    public int BuyPrice;
+    
+    /// <summary>
+    /// The time when the item was last insta-bought for the <see cref="BuyPrice"/>.
+    /// </summary>
+    public DateTime LastBuyTime;
+    
+    /// <summary>
+    /// The item can be instantly sold for this price.
+    /// </summary>
+    public int SellPrice;
+    
+    /// <summary>
+    /// The time when the item was last insta-sold for the <see cref="SellPrice"/>.
+    /// </summary>
+    public DateTime LastSellTime;
+    
+    /// <summary>
+    /// Average price.
+    /// </summary>
+    public int AveragePrice => (BuyPrice + SellPrice) / 2;
+    
+    /// <summary>
+    /// The time when the item was last bought or sold.
+    /// </summary>
+    public DateTime LastUpdateTime => LastBuyTime > LastSellTime ? LastBuyTime : LastSellTime;
+    
+    /// <summary>
+    /// Margin without the 1% GE-tax applied.
+    /// </summary>
+    public int Margin => BuyPrice - SellPrice;
+    
+    /// <summary>
+    /// Margin with the 1% GE-tax applied.
+    /// </summary>
+    public int MarginWithTax => (int)(Margin * 0.99);
+    
+    /// <summary>
+    /// Returns the lowest price of buy and sell.
+    /// </summary>
+    public int LowestPrice => BuyPrice < SellPrice ? BuyPrice : SellPrice;
+    
+    /// <summary>
+    /// Returns the highest price of buy and sell.
+    /// </summary>
+    public int HighestPrice => BuyPrice > SellPrice ? BuyPrice : SellPrice;
+    
+    public bool IsValid => BuyPrice > 0 && SellPrice > 0;
+}
+
+public class AveragedPriceData
+{
+    /// <summary>
+    /// The item can be instantly bought for this price.
+    /// </summary>
+    public int BuyPrice;
+    
+    /// <summary>
+    /// Items bought over this period.
+    /// </summary>
+    public int BuyVolume;
+    
+    /// <summary>
+    /// The item can be instantly sold for this price.
+    /// </summary>
+    public int SellPrice;
+    
+    /// <summary>
+    /// Items sold over this period.
+    /// </summary>
+    public int SellVolume;
+    
+    /// <summary>
+    /// Average price over the total period.
+    /// </summary>
+    public int AveragePrice => (BuyPrice + SellPrice) / 2;
+    
+    /// <summary>
+    /// Total volume of items bought and sold.
+    /// </summary>
+    public int TotalVolume => BuyVolume + SellVolume;
+    
+    /// <summary>
+    /// Margin without the 1% GE-tax applied.
+    /// </summary>
+    public int Margin => BuyPrice - SellPrice;
+    
+    /// <summary>
+    /// Margin with the 1% GE-tax applied.
+    /// </summary>
+    public int MarginWithTax => (int)(Margin * 0.99);
+    
+    /// <summary>
+    /// If this data entry has enough data to be considered valid.
+    /// </summary>
+    public bool IsValid => BuyPrice > 0 && SellPrice > 0;
+}
+
 public class CacheEntry
 {
     public readonly ItemData Item;
     
     /// <summary>
-    /// The item can be instantly bought for this price.
+    /// Latest price data.
     /// </summary>
-    public int InstaBuyPrice;
+    public readonly LatestPriceData PriceLatest = new();
     
     /// <summary>
-    /// The time when the item was last insta-bought for the <see cref="InstaBuyPrice"/>.
+    /// Pricing data averaged over the last 5 minutes.
     /// </summary>
-    public DateTime LastInstaBuyTime = DateTime.MinValue;
+    public readonly AveragedPriceData Price5MinAverage = new();
     
     /// <summary>
-    /// The item can be instantly sold for this price.
+    /// Pricing data averaged over the last hour.
     /// </summary>
-    public int InstaSellPrice;
+    public readonly AveragedPriceData Price1HourAverage = new();
     
     /// <summary>
-    /// The time when the item was last insta-sold for the <see cref="InstaSellPrice"/>.
+    /// Pricing data averaged over the 6 hours.
     /// </summary>
-    public DateTime LastInstaSellTime = DateTime.MinValue;
+    public readonly AveragedPriceData Price6HourAverage = new();
     
     /// <summary>
-    /// <see cref="InstaBuyPrice"/> but averaged over the last 5 minutes.
+    /// Pricing data averaged over the last 24 hours.
     /// </summary>
-    public int AverageInstaBuyPrice5Min;
-    
-    /// <summary>
-    /// The amount of items instantly bought for the <see cref="InstaBuyPrice"/> in the last 5 minutes.
-    /// </summary>
-    public int InstaBuyCountLast5Min;
-    
-    /// <summary>
-    /// <see cref="InstaSellPrice"/> but averaged over the last 5 minutes.
-    /// </summary>
-    public int AverageInstaSellPrice5Min;
-    
-    /// <summary>
-    /// The amount of items instantly sold for the <see cref="InstaSellPrice"/> in the last 5 minutes.
-    /// </summary>
-    public int InstaSellCountLast5Min;
-    
-    /// <summary>
-    /// <see cref="InstaBuyPrice"/> but averaged over the last 1 hour.
-    /// </summary>
-    public int AverageInstaBuyPriceLastHour;
-    
-    /// <summary>
-    /// The amount of items instantly bought for the <see cref="InstaBuyPrice"/> in the last 1 hour.
-    /// </summary>
-    public int InstaBuyCountLastHour;
-    
-    /// <summary>
-    /// <see cref="InstaSellPrice"/> but averaged over the last 1 hour.
-    /// </summary>
-    public int AverageInstaSellPriceLastHour;
-    
-    /// <summary>
-    /// The amount of items instantly sold for the <see cref="InstaSellPrice"/> in the last 1 hour.
-    /// </summary>
-    public int InstaSellCountLastHour;
-    
-    /// <summary>
-    /// <see cref="InstaBuyPrice"/> but averaged over the last 24 hours.
-    /// </summary>
-    public int AverageInstaBuyPriceLast24Hours;
-    
-    /// <summary>
-    /// The amount of items instantly bought for the <see cref="InstaBuyPrice"/> in the last 24 hours.
-    /// </summary>
-    public int InstaBuyCountLast24Hours;
-    
-    /// <summary>
-    /// <see cref="InstaSellPrice"/> but averaged over the last 24 hours.
-    /// </summary>
-    public int AverageInstaSellPriceLast24Hours;
-    
-    /// <summary>
-    /// The amount of items instantly sold for the <see cref="InstaSellPrice"/> in the last 24 hours.
-    /// </summary>
-    public int InstaSellCountLast24Hours;
+    public readonly AveragedPriceData Price24HourAverage = new();
 
 
     public CacheEntry(ItemData item)
@@ -95,56 +143,95 @@ public class CacheEntry
     }
 
 
-    public void UpdateLatestPrices(ItemLatestPriceData data)
+    public bool IsFlippable()
+    {
+        // All items below this price threshold are not worth flipping.
+        const int minPriceThreshold = 100;
+        
+        // If the price has fluctuated more than this threshold in the last hour, it's too volatile to flip.
+        const double volatilityThreshold = 10.0;
+        
+        if (!PriceLatest.IsValid || !Price5MinAverage.IsValid || !Price1HourAverage.IsValid || !Price6HourAverage.IsValid || !Price24HourAverage.IsValid)
+            return false; // Not enough data to determine if flippable.
+        
+        // Check if the item is too cheap to flip.
+        if (PriceLatest.BuyPrice < minPriceThreshold || PriceLatest.SellPrice < minPriceThreshold)
+            return false;
+        
+        // Check volatility of the hourly average price.
+        //WARN: This volatility check does not work as intended:
+        //WARN: we do not use the true min/max values for a given period, but the "average" min/max values over the period.
+        double priceFluctuationPercentage = CalculateFluctuationPercentage(Price1HourAverage.Margin, Price1HourAverage.AveragePrice);
+        if (priceFluctuationPercentage > volatilityThreshold)
+            return false;
+        
+        // The item is flippable.
+        return true;
+    }
+
+
+    private static double CalculateFluctuationPercentage(int margin, double average)
+    {
+        if (average == 0)
+            return 0; // Avoid division by zero.
+
+        double percentageFluctuation = margin / average * 100.0;
+        return Math.Abs(percentageFluctuation); // Ensure a positive percentage.
+    }
+
+
+    public void UpdateLatestPrices(JsonItemLatestPriceData data)
     {
         if (data.HighPrice != null)
-            InstaBuyPrice = data.HighPrice.Value;
-        LastInstaBuyTime = data.HighTime;
+        {
+            PriceLatest.BuyPrice = data.HighPrice.Value;
+            PriceLatest.LastBuyTime = data.HighTime;
+        }
 
         if (data.LowPrice != null)
-            InstaSellPrice = data.LowPrice.Value;
-        LastInstaSellTime = data.LowTime;
+        {
+            PriceLatest.SellPrice = data.LowPrice.Value;
+            PriceLatest.LastSellTime = data.LowTime;
+        }
     }
 
 
-    public void Update5MinAveragePrices(ItemAveragePriceData data)
+    public void Update5MinAveragePrices(JsonItemAveragePriceData data)
     {
-        if (data.AverageHighPrice != null)
-            AverageInstaBuyPrice5Min = data.AverageHighPrice.Value;
-        if (data.HighVolume != null)
-            InstaBuyCountLast5Min = data.HighVolume.Value;
-
-        if (data.AverageLowPrice != null)
-            AverageInstaSellPrice5Min = data.AverageLowPrice.Value;
-        if (data.LowVolume != null)
-            InstaSellCountLast5Min = data.LowVolume.Value;
+        UpdateAverageData(Price5MinAverage, data);
     }
 
 
-    public void Update1HourAveragePrices(ItemAveragePriceData data)
+    public void Update1HourAveragePrices(JsonItemAveragePriceData data)
     {
-        if (data.AverageHighPrice != null)
-            AverageInstaBuyPriceLastHour = data.AverageHighPrice.Value;
-        if (data.HighVolume != null)
-            InstaBuyCountLastHour = data.HighVolume.Value;
-
-        if (data.AverageLowPrice != null)
-            AverageInstaSellPriceLastHour = data.AverageLowPrice.Value;
-        if (data.LowVolume != null)
-            InstaSellCountLastHour = data.LowVolume.Value;
+        UpdateAverageData(Price1HourAverage, data);
+    }
+    
+    
+    public void Update6HourAveragePrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price6HourAverage, data);
     }
 
 
-    public void Update24HourAveragePrices(ItemAveragePriceData pairValue)
+    public void Update24HourAveragePrices(JsonItemAveragePriceData data)
     {
-        if (pairValue.AverageHighPrice != null)
-            AverageInstaBuyPriceLast24Hours = pairValue.AverageHighPrice.Value;
-        if (pairValue.HighVolume != null)
-            InstaBuyCountLast24Hours = pairValue.HighVolume.Value;
+        UpdateAverageData(Price24HourAverage, data);
+    }
+    
+    
+    private static void UpdateAverageData(AveragedPriceData data, JsonItemAveragePriceData jsonData)
+    {
+        if (jsonData.AverageHighPrice != null)
+            data.BuyPrice = jsonData.AverageHighPrice.Value;
 
-        if (pairValue.AverageLowPrice != null)
-            AverageInstaSellPriceLast24Hours = pairValue.AverageLowPrice.Value;
-        if (pairValue.LowVolume != null)
-            InstaSellCountLast24Hours = pairValue.LowVolume.Value;
+        if (jsonData.HighVolume != null)
+            data.BuyVolume = jsonData.HighVolume.Value;
+
+        if (jsonData.AverageLowPrice != null)
+            data.SellPrice = jsonData.AverageLowPrice.Value;
+
+        if (jsonData.LowVolume != null)
+            data.SellVolume = jsonData.LowVolume.Value;
     }
 }

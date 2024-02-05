@@ -28,7 +28,7 @@ public class ItemCache
 
     public void UpdateLatestPrices(ItemLatestPriceDataCollection latestPrices)
     {
-        foreach (KeyValuePair<int, ItemLatestPriceData> pair in latestPrices.Data)
+        foreach (KeyValuePair<int, JsonItemLatestPriceData> pair in latestPrices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.UpdateLatestPrices(pair.Value);
@@ -38,7 +38,7 @@ public class ItemCache
 
     public void Update5MinAveragePrices(ItemAveragePriceDataCollection average5MinPrices)
     {
-        foreach (KeyValuePair<int, ItemAveragePriceData> pair in average5MinPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average5MinPrices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update5MinAveragePrices(pair.Value);
@@ -48,7 +48,7 @@ public class ItemCache
 
     public void Update1HourAveragePrices(ItemAveragePriceDataCollection average1HourPrices)
     {
-        foreach (KeyValuePair<int, ItemAveragePriceData> pair in average1HourPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average1HourPrices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update1HourAveragePrices(pair.Value);
@@ -56,9 +56,19 @@ public class ItemCache
     }
 
 
+    public void Update6HourAveragePrices(ItemAveragePriceDataCollection average6HourPrices)
+    {
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average6HourPrices.Data)
+        {
+            if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
+                entry.Update6HourAveragePrices(pair.Value);
+        }
+    }
+
+
     public void Update24HourAveragePrices(ItemAveragePriceDataCollection average24HourPrices)
     {
-        foreach (KeyValuePair<int, ItemAveragePriceData> pair in average24HourPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average24HourPrices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update24HourAveragePrices(pair.Value);

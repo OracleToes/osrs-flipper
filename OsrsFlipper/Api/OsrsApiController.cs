@@ -60,6 +60,12 @@ internal class OsrsApiController : IDisposable
     }
 
 
+    public async Task<ItemAveragePriceDataCollection?> Get6HourAveragePrices()
+    {
+        return await _averagePriceApi.Get6HourAverage(_client);
+    }
+
+
     public async Task<ItemAveragePriceDataCollection?> Get24HourAveragePrices()
     {
         return await _averagePriceApi.Get24HourAverage(_client);
