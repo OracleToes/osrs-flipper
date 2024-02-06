@@ -6,6 +6,7 @@ public class ItemFlip
 {
     public readonly ItemData Item;
     public readonly int? PotentialProfit;
+    public readonly int TotalVolume24h;
     public readonly double RoiPercentage;
     public readonly int InstaBuyPrice;
     public readonly int InstaSellPrice;
@@ -19,10 +20,11 @@ public class ItemFlip
     public string OsrsGeDbLink => $"https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj={Item.Id}";
 
 
-    public ItemFlip(ItemData item, int? potentialProfit, double roiPercentage, int instaBuyPrice, int instaSellPrice, DateTime lastInstaBuyTime, DateTime lastInstaSellTime, int averagePrice24Hour)
+    public ItemFlip(ItemData item, int? potentialProfit, int totalVolume24H, double roiPercentage, int instaBuyPrice, int instaSellPrice, DateTime lastInstaBuyTime, DateTime lastInstaSellTime, int averagePrice24Hour)
     {
         Item = item;
         PotentialProfit = potentialProfit;
+        TotalVolume24h = totalVolume24H;
         RoiPercentage = roiPercentage;
         InstaBuyPrice = instaBuyPrice;
         InstaSellPrice = instaSellPrice;
@@ -35,6 +37,6 @@ public class ItemFlip
     public override string ToString()
     {
         string potentialProfit = PotentialProfit.HasValue ? $"{PotentialProfit.Value.SeparateThousands()}gp" : "Unknown";
-        return $"{Item.Name} - {potentialProfit} potential profit, {RoiPercentage:F1}% ROI. (Buy: {InstaBuyPrice.SeparateThousands()}gp, Sell: {InstaSellPrice.SeparateThousands()}gp, 24h avg: {AveragePrice24Hour.SeparateThousands()}gp)";
+        return $"{Item.Name}: {potentialProfit}gp potential profit. {RoiPercentage:F1}% ROI. (InstaBuy: {InstaBuyPrice.SeparateThousands()}gp, InstaSell: {InstaSellPrice.SeparateThousands()}gp, 24h avg: {AveragePrice24Hour.SeparateThousands()}gp). [OSRS Wiki Prices]({OsrsWikiPricesLink})";
     }
 }

@@ -26,7 +26,7 @@ internal static class Program
             if (dumps.Count > 0)
             {
                 Console.WriteLine();
-                Logger.Info("Dumps:");
+                Logger.Info("Dump Detections:");
                 foreach (ItemFlip dump in dumps)
                     Logger.Info(dump);
                 Console.Beep();

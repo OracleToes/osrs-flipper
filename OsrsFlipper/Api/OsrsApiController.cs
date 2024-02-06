@@ -1,4 +1,5 @@
-﻿using OsrsFlipper.Data.Mapping;
+﻿using System.Diagnostics;
+using OsrsFlipper.Data.Mapping;
 using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
 using OsrsFlipper.Data.TimeSeries;
@@ -47,28 +48,40 @@ internal class OsrsApiController : IDisposable
         return await _latestPriceApi.GetLatest(_client);
     }
 
-
-    public async Task<ItemAveragePriceDataCollection?> Get5MinAveragePrices()
+    /// <summary>
+    /// Gets the average prices averaged over a 5-minute period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 5-minute period being averaged. Must be divisible by 300 (5 minutes).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get5MinAveragePrices(DateTime timestamp = default)
     {
-        return await _averagePriceApi.Get5MinAverage(_client);
+        return await _averagePriceApi.Get5MinAverage(_client, timestamp);
     }
 
-
-    public async Task<ItemAveragePriceDataCollection?> Get1HourAveragePrices()
+    /// <summary>
+    /// Gets the average prices averaged over a 1-hour period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 1-hour period being averaged. Must be divisible by 3600 (1h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get1HourAveragePrices(DateTime timestamp = default)
     {
-        return await _averagePriceApi.Get1HourAverage(_client);
+        return await _averagePriceApi.Get1HourAverage(_client, timestamp);
     }
 
-
-    public async Task<ItemAveragePriceDataCollection?> Get6HourAveragePrices()
+    /// <summary>
+    /// Gets the average prices averaged over a 6-hour period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 6-hour period being averaged. Must be divisible by 21600 (6h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get6HourAveragePrices(DateTime timestamp = default)
     {
-        return await _averagePriceApi.Get6HourAverage(_client);
+        return await _averagePriceApi.Get6HourAverage(_client, timestamp);
     }
 
-
-    public async Task<ItemAveragePriceDataCollection?> Get24HourAveragePrices()
+    /// <summary>
+    /// Gets the average prices averaged over a 24-hour period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 24-hour period being averaged. Must be divisible by 86400 (24h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get24HourAveragePrices(DateTime timestamp = default)
     {
-        return await _averagePriceApi.Get24HourAverage(_client);
+        return await _averagePriceApi.Get24HourAverage(_client, timestamp);
     }
 
 

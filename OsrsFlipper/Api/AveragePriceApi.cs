@@ -20,8 +20,41 @@ public class AveragePriceApi : OsrsApi<ItemAveragePriceDataCollection>
     }
 
 
-    public async Task<ItemAveragePriceDataCollection?> Get5MinAverage(RestClient client) => await ExecuteRequest(client, _request5Min);
-    public async Task<ItemAveragePriceDataCollection?> Get1HourAverage(RestClient client) => await ExecuteRequest(client, _request1Hour);
-    public async Task<ItemAveragePriceDataCollection?> Get6HourAverage(RestClient client) => await ExecuteRequest(client, _request6Hour);
-    public async Task<ItemAveragePriceDataCollection?> Get24HourAverage(RestClient client) => await ExecuteRequest(client, _request24Hour);
+    /// <summary>
+    /// Gets the average prices averaged over a 5-minute period.
+    /// </summary>
+    /// <param name="client">The client to use for the request</param>
+    /// <param name="timestamp">Represents the beginning of the 5-minute period being averaged. Must be divisible by 300 (5 minutes).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get5MinAverage(RestClient client, DateTime timestamp) => await GetAverage(client, _request5Min, timestamp);
+
+    /// <summary>
+    /// Gets the average prices averaged over a 1-hour period.
+    /// </summary>
+    /// <param name="client">The client to use for the request</param>
+    /// <param name="timestamp">Represents the beginning of the 1-hour period being averaged. Must be divisible by 3600 (1h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get1HourAverage(RestClient client, DateTime timestamp) => await GetAverage(client, _request1Hour, timestamp);
+
+    /// <summary>
+    /// Gets the average prices averaged over a 6-hour period.
+    /// </summary>
+    /// <param name="client">The client to use for the request</param>
+    /// <param name="timestamp">Represents the beginning of the 6-hour period being averaged. Must be divisible by 21600 (6h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get6HourAverage(RestClient client, DateTime timestamp) => await GetAverage(client, _request6Hour, timestamp);
+
+    /// <summary>
+    /// Gets the average prices averaged over a 24-hour period.
+    /// </summary>
+    /// <param name="client">The client to use for the request</param>
+    /// <param name="timestamp">Represents the beginning of the 24-hour period being averaged. Must be divisible by 86400 (24h).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get24HourAverage(RestClient client, DateTime timestamp) => await GetAverage(client, _request24Hour, timestamp);
+
+
+    private async Task<ItemAveragePriceDataCollection?> GetAverage(RestClient client, RestRequest request, DateTime timestamp)
+    {
+        // Add the unix timestamp to the request
+        if (timestamp != default)
+            request.AddQueryParameter("timestamp", Utils.DateTimeToUnixTime(timestamp).ToString());
+        
+        return await ExecuteRequest(client, request);
+    }
 }

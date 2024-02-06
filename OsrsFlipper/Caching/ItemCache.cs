@@ -36,6 +36,16 @@ public class ItemCache
     }
 
 
+    public void Update5MinAverageOffsetPrices(ItemAveragePriceDataCollection average5MinPrices)
+    {
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average5MinPrices.Data)
+        {
+            if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
+                entry.Update5MinAverageOffsetPrices(pair.Value);
+        }
+    }
+
+
     public void Update5MinAveragePrices(ItemAveragePriceDataCollection average5MinPrices)
     {
         foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average5MinPrices.Data)

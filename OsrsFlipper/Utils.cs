@@ -5,12 +5,19 @@ namespace OsrsFlipper;
 
 internal static class Utils
 {
-    public static DateTime UnixTimeToDateTime(double unixTimeStamp)
+    public static DateTime UnixTimeToDateTime(long unixTimeStamp)
     {
         // Unix timestamp is seconds past epoch.
         DateTime dateTime = new(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-        dateTime = dateTime.AddSeconds(unixTimeStamp).ToLocalTime();
+        dateTime = dateTime.AddSeconds(unixTimeStamp);
         return dateTime;
+    }
+    
+    
+    
+    public static long DateTimeToUnixTime(DateTime dateTime)
+    {
+        return (long)(dateTime - new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
     }
 
 

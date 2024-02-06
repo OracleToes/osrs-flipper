@@ -41,7 +41,7 @@ public sealed class Flipper : IDisposable
         {
             if (_cooldownManager.IsOnCooldown(entry.Item.Id))
                 continue;
-            ItemFlip? flip = await TryGetFlip(entry);
+            ItemFlip? flip = await TryCalculateFlip(entry);
             if (flip != null)
             {
                 flips.Add(flip);
@@ -53,24 +53,28 @@ public sealed class Flipper : IDisposable
     }
     
     
-    private static async Task<ItemFlip?> TryGetFlip(CacheEntry entry)
+    private static async Task<ItemFlip?> TryCalculateFlip(CacheEntry entry)
     {
         const double minPriceDropPercentage = 15 / 100.0;
         if (!entry.IsFlippable())
             return null;
         
         // Calculate the potential profit
-        int? potentialProfit = entry.Item.HasBuyLimit ? entry.PriceLatest.MarginWithTax * entry.Item.GeBuyLimit : null;
+        int margin = entry.PriceLatest.MarginWithTax;
+        int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
         
         // Skip if potential profit is less than 100k
-        if (potentialProfit is < 100_000)
+        if (potentialProfit is < 200_000)
             return null;
         
         // Check that the lowest component of the latest price has dropped minPriceDropPercentage or more, compared to the last 5 minute average price.
-        if (entry.PriceLatest.LowestPrice > entry.Price5MinAverage.AveragePrice * (1.0 - minPriceDropPercentage))
+        if (entry.PriceLatest.LowestPrice > entry.Price5MinAverageOffset.AveragePrice * (1.0 - minPriceDropPercentage))
             return null;
         
-        return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
+        // Calculate the ROI percentage
+        double roiPercentage = margin / (double)entry.PriceLatest.SellPrice * 100;
+        
+        return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, roiPercentage, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
     }
     
     
@@ -81,6 +85,12 @@ public sealed class Flipper : IDisposable
             _cache.UpdateLatestPrices(latestPrices);
         else
             Logger.Warn("Failed to load latest prices");
+        
+        ItemAveragePriceDataCollection? average5MinOffsetPrices = await _apiController.Get5MinAveragePrices(Get5MinOffset());
+        if (average5MinOffsetPrices != null)
+            _cache.Update5MinAverageOffsetPrices(average5MinOffsetPrices);
+        else
+            Logger.Warn("Failed to load 5 minute average (offset) prices");
         
         ItemAveragePriceDataCollection? average5MinPrices = await _apiController.Get5MinAveragePrices();
         if (average5MinPrices != null)
@@ -105,6 +115,16 @@ public sealed class Flipper : IDisposable
             _cache.Update24HourAveragePrices(average24HourPrices);
         else
             Logger.Warn("Failed to load 24 hour average prices");
+    }
+
+
+    private static DateTime Get5MinOffset()
+    {
+        // Get the 5-minute period we are currently in, and subtract 5 minutes to get the previous period.
+        long currentUnixTime = Utils.DateTimeToUnixTime(DateTime.UtcNow);
+        long startOfCurrentPeriod = currentUnixTime / 300;
+        long startOfLastPeriod = startOfCurrentPeriod - 1;
+        return Utils.UnixTimeToDateTime(startOfLastPeriod * 300);
     }
 
 
