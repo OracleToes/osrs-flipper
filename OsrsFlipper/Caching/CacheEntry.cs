@@ -102,6 +102,16 @@ public class AveragedPriceData
     public int MarginWithTax => (int)(Margin * 0.99);
     
     /// <summary>
+    /// Returns the lowest price of buy and sell.
+    /// </summary>
+    public int LowestPrice => BuyPrice < SellPrice ? BuyPrice : SellPrice;
+    
+    /// <summary>
+    /// Returns the highest price of buy and sell.
+    /// </summary>
+    public int HighestPrice => BuyPrice > SellPrice ? BuyPrice : SellPrice;
+    
+    /// <summary>
     /// If this data entry has enough data to be considered valid.
     /// </summary>
     public bool IsValid => BuyPrice > 0 && SellPrice > 0;
@@ -151,23 +161,27 @@ public class CacheEntry
     public bool IsFlippable()
     {
         // All items below this price threshold are not worth flipping.
-        const int minPriceThreshold = 100;
+        const int minPriceThreshold = 50;
         
         // If the price has fluctuated more than this threshold in the last hour, it's too volatile to flip.
-        const double volatilityThreshold = 10.0;
+        const double volatilityThreshold = 15.0;
         
         if (!PriceLatest.IsValid || !Price5MinAverageOffset.IsValid || !Price5MinAverage.IsValid || !Price1HourAverage.IsValid || !Price6HourAverage.IsValid || !Price24HourAverage.IsValid)
             return false; // Not enough data to determine if flippable.
         
         // Check if the item is too cheap to flip.
-        if (PriceLatest.BuyPrice < minPriceThreshold || PriceLatest.SellPrice < minPriceThreshold)
+        if (PriceLatest.HighestPrice < minPriceThreshold)
             return false;
         
-        // Check volatility of the hourly average price.
+        // Check volatility of the hourly average price. Do not take the latest price into account.
         //WARN: This volatility check does not work as intended:
-        //WARN: we do not use the true min/max values for a given period, but the "average" min/max values over the period.
+        //WARN: we do not use the true min/max values of a given time period, but the "averaged" min/max values over the period.
         double priceFluctuationPercentage = CalculateFluctuationPercentage(Price5MinAverageOffset.Margin, Price5MinAverageOffset.AveragePrice);
         if (priceFluctuationPercentage > volatilityThreshold)
+            return false;
+        
+        // Check that the item has been traded in the last 2 minutes.
+        if (DateTime.UtcNow - PriceLatest.LastUpdateTime > TimeSpan.FromMinutes(2))
             return false;
         
         // The item is flippable.

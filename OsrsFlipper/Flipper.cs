@@ -55,24 +55,33 @@ public sealed class Flipper : IDisposable
     
     private static async Task<ItemFlip?> TryCalculateFlip(CacheEntry entry)
     {
-        const double minPriceDropPercentage = 15 / 100.0;
+        const double minPriceDropPercentage = 12 / 100.0;
         if (!entry.IsFlippable())
             return null;
         
-        // Calculate the potential profit
-        int margin = entry.PriceLatest.MarginWithTax;
+        // The price the item should be bought at to make a profit.
+        int priceToBuyAt = entry.PriceLatest.LowestPrice;
+        // The price the item should be sold at to make a profit.
+        int priceToSellAt = entry.Price1HourAverage.HighestPrice;
+        
+        // Calculate the potential profit. WARN: Possibly use Price1HourAverage.AveragePrice instead of Price1HourAverage.HighestPrice?
+        int margin = priceToSellAt - priceToBuyAt;
         int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
         
-        // Skip if potential profit is less than 100k
+        // Skip if potential profit is less than 200k
         if (potentialProfit is < 200_000)
             return null;
         
         // Check that the lowest component of the latest price has dropped minPriceDropPercentage or more, compared to the last 5 minute average price.
-        if (entry.PriceLatest.LowestPrice > entry.Price5MinAverageOffset.AveragePrice * (1.0 - minPriceDropPercentage))
+        if (priceToBuyAt > entry.Price5MinAverageOffset.AveragePrice * (1.0 - minPriceDropPercentage))
+            return null;
+        
+        // The current lowest price should also be less than the 1 hour average price.
+        if (priceToBuyAt > entry.Price1HourAverage.AveragePrice * (1.0 - minPriceDropPercentage))
             return null;
         
         // Calculate the ROI percentage
-        double roiPercentage = margin / (double)entry.PriceLatest.SellPrice * 100;
+        double roiPercentage = margin / (double)priceToBuyAt * 100;
         
         return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, roiPercentage, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
     }
