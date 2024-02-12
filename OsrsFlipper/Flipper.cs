@@ -3,6 +3,8 @@ using OsrsFlipper.Caching;
 using OsrsFlipper.Data.Mapping;
 using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
+using OsrsFlipper.Filtering;
+using OsrsFlipper.Filtering.Filters;
 
 namespace OsrsFlipper;
 
@@ -22,12 +24,26 @@ public sealed class Flipper : IDisposable
     /// Manages cooldowns for items (to avoid the same item being detected multiple times in a short period).
     /// </summary>
     private readonly CooldownManager _cooldownManager = new();
+    
+    /// <summary>
+    /// Contains all the filters that an item must pass to be considered for flipping.
+    /// </summary>
+    private readonly FilterCollection _filterCollection = new();
 
 
     private Flipper(OsrsApiController apiController, ItemCache cache)
     {
         _apiController = apiController;
         _cache = cache;
+        
+        // Add wanted filters to the filter collection.
+        _filterCollection
+            .AddFilter(new ValidDataFilter())   // Skip items with invalid data.
+            .AddFilter(new ItemCooldownFilter(_cooldownManager))    // Skip items that are on a cooldown.
+            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))   // Skip items with a 24-hour average price outside the range 50 - 50,000,000.
+            .AddFilter(new PotentialProfitFilter(200_000, true))    // Skip items with a potential profit less than 200k.
+            .AddFilter(new ReturnOfInvestmentFilter(5))     // Skip items with a return of investment less than 5%.
+            .AddFilter(new MaxVolatilityFilter(15))     // Skip items with a price fluctuation of more than 15% in the last 5 minutes.
     }
     
     
@@ -94,9 +110,9 @@ public sealed class Flipper : IDisposable
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
         // The price the item should be sold at to make a profit.
-        int priceToSellAt = entry.Price1HourAverage.HighestPrice;
+        int priceToSellAt = entry.Price1HourAverage.HighestPrice; // NOTE: Possibly use Price1HourAverage.AveragePrice instead of Price1HourAverage.HighestPrice?
         
-        // Calculate the potential profit. WARN: Possibly use Price1HourAverage.AveragePrice instead of Price1HourAverage.HighestPrice?
+        // Calculate the potential profit.
         int margin = priceToSellAt - priceToBuyAt;
         int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
         
