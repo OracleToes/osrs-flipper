@@ -11,8 +11,4 @@
       <ProjectReference Include="..\OsrsFlipper\OsrsFlipper.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="AutoUpdateViaGitHubRelease" Version="0.1.64" />
-    </ItemGroup>
-
 </Project>
