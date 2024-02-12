@@ -5,8 +5,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-        <Deterministic>false</Deterministic>
     </PropertyGroup>
 
     <ItemGroup>
