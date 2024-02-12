@@ -1,4 +1,4 @@
-﻿namespace DeveloperClient;
+﻿namespace ConsoleClient;
 
 public static class Logger
 {

@@ -5,10 +5,16 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <Deterministic>false</Deterministic>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\OsrsFlipper\OsrsFlipper.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoUpdateViaGitHubRelease" Version="0.1.64" />
     </ItemGroup>
 
 </Project>
