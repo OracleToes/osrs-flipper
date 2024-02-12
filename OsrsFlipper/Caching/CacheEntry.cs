@@ -158,7 +158,11 @@ public class CacheEntry
     }
 
 
-    public bool IsFlippable()
+    /// <summary>
+    /// Checks if the item could potentially be flipped.
+    /// </summary>
+    /// <returns></returns>
+    public bool IsPotentiallyFlippable()
     {
         // All items below this price threshold are not worth flipping.
         const int minPriceThreshold = 50;

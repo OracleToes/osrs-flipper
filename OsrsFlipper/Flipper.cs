@@ -8,8 +8,19 @@ namespace OsrsFlipper;
 
 public sealed class Flipper : IDisposable
 {
+    /// <summary>
+    /// The API controller used to fetch data from the OSRS API.
+    /// </summary>
     private readonly OsrsApiController _apiController;
+    
+    /// <summary>
+    /// Contains cached market data for every item in the game.
+    /// </summary>
     private readonly ItemCache _cache;
+    
+    /// <summary>
+    /// Manages cooldowns for items (to avoid the same item being detected multiple times in a short period).
+    /// </summary>
     private readonly CooldownManager _cooldownManager = new();
 
 
@@ -20,6 +31,9 @@ public sealed class Flipper : IDisposable
     }
     
     
+    /// <summary>
+    /// Creates a new Flipper instance.
+    /// </summary>
     public static async Task<Flipper> Create()
     {
         OsrsApiController apiController = new();
@@ -33,31 +47,49 @@ public sealed class Flipper : IDisposable
     }
     
     
+    /// <summary>
+    /// Finds all potential dumps.
+    /// </summary>
+    /// <returns></returns>
     public async Task<List<ItemFlip>> FindDumps()
     {
         List<ItemFlip> flips = new();
         
+        // Loop all available items.
         foreach (CacheEntry entry in _cache.Entries())
         {
+            // Skip if the item is on cooldown.
             if (_cooldownManager.IsOnCooldown(entry.Item.Id))
                 continue;
+            
+            // Try to calculate a flip for the item.
             ItemFlip? flip = await TryCalculateFlip(entry);
-            if (flip != null)
-            {
-                flips.Add(flip);
-                _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(2));
-            }
+
+            // Skip if no flip was found.
+            if (flip == null)
+                continue;
+        
+            // Skip if the item is not flippable.
+            if (!entry.IsPotentiallyFlippable())
+                continue;
+            
+            // Add the flip to the list and set the item on cooldown.
+            flips.Add(flip);
+            _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(2));
         }
         
         return flips;
     }
     
     
+    /// <summary>
+    /// Tries to find a flip for the given item.
+    /// </summary>
+    /// <param name="entry">The item to calculate a flip for.</param>
+    /// <returns>A flip if one was found, otherwise null.</returns>
     private static async Task<ItemFlip?> TryCalculateFlip(CacheEntry entry)
     {
         const double minPriceDropPercentage = 12 / 100.0;
-        if (!entry.IsFlippable())
-            return null;
         
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
@@ -87,6 +119,9 @@ public sealed class Flipper : IDisposable
     }
     
     
+    /// <summary>
+    /// Refreshes all the latest market data in the cache.
+    /// </summary>
     public async Task RefreshCache()
     {
         ItemLatestPriceDataCollection? latestPrices = await _apiController.GetLatestPrices();

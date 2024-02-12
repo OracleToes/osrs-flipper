@@ -21,8 +21,13 @@ internal static class Program
 
         while (true)
         {
+            // Update the latest data.
             await flipper.RefreshCache();
+            
+            // Find dumps.
             List<ItemFlip> dumps = await flipper.FindDumps();
+            
+            // Log the dumps.
             if (dumps.Count > 0)
             {
                 Console.WriteLine();
@@ -32,6 +37,7 @@ internal static class Program
                 Console.Beep();
             }
 
+            // Wait a bit to keep API maintainers happy :)
             await Task.Delay(TimeSpan.FromSeconds(REFRESH_FLIPPER_DATA_INTERVAL));
         }
     }
