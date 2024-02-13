@@ -23,7 +23,7 @@ internal class ReturnOfInvestmentFilter : FlipFilter
     }
 
 
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = itemData.PriceLatest.LowestPrice;
@@ -38,7 +38,7 @@ internal class ReturnOfInvestmentFilter : FlipFilter
             margin = (int)(margin * 0.99);
         
         // Calculate the return of investment.
-        double roi = margin / (double)priceToBuyAt * 100;
+        double roi = margin / (double)priceToSellAt * 100;
         
         // Check if the return of investment is above the minimum required.
         return roi >= _minRoiPercentage;

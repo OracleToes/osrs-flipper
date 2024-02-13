@@ -23,7 +23,7 @@ internal class Item24HAveragePriceFilter : FlipFilter
     }
 
 
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         int averagePrice = itemData.Price24HourAverage.AveragePrice;
         bool tooLow = _minPrice != -1 && averagePrice < _minPrice;

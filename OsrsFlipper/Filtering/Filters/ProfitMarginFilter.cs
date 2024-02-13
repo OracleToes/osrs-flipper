@@ -23,7 +23,7 @@ internal class ProfitMarginFilter : FlipFilter
     }
 
 
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = itemData.PriceLatest.LowestPrice;

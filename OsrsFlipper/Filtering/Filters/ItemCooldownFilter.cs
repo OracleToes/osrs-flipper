@@ -16,7 +16,7 @@ internal class ItemCooldownFilter : FlipFilter
     }
 
 
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         return !_cooldownManager.IsOnCooldown(itemData.Item.Id);
     }

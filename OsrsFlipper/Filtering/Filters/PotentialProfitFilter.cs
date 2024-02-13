@@ -26,7 +26,7 @@ internal class PotentialProfitFilter : FlipFilter
     }
 
 
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         // If the item has no buy limit and we don't want to include items with unknown buy limits, return false.
         if (!itemData.Item.HasBuyLimit)

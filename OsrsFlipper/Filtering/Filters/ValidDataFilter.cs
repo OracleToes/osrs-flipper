@@ -8,11 +8,13 @@ namespace OsrsFlipper.Filtering.Filters;
 /// </summary>
 internal class ValidDataFilter : FlipFilter
 {
-    public override bool CheckPass(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData)
     {
         return itemData.PriceLatest.IsValid &&
                itemData.Price5MinAverageOffset.IsValid &&
                itemData.Price5MinAverage.IsValid &&
+               itemData.Price10MinAverage.IsValid &&
+               itemData.Price30MinAverage.IsValid &&
                itemData.Price1HourAverage.IsValid &&
                itemData.Price6HourAverage.IsValid &&
                itemData.Price24HourAverage.IsValid;

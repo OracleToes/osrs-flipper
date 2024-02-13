@@ -14,11 +14,18 @@ internal class FilterCollection
     }
     
     
+    public void InitializeFilters()
+    {
+        foreach (FlipFilter filter in _filters)
+            filter.Initialize();
+    }
+    
+    
     public bool PassesAllFilters(CacheEntry itemData)
     {
         foreach (FlipFilter filter in _filters)
         {
-            if (!filter.CheckPass(itemData))
+            if (!filter.CheckPassFilter(itemData))
                 return false;
         }
 

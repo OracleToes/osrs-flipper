@@ -38,12 +38,15 @@ public sealed class Flipper : IDisposable
         
         // Add wanted filters to the filter collection.
         _filterCollection
-            .AddFilter(new ValidDataFilter())   // Skip items with invalid data.
-            .AddFilter(new ItemCooldownFilter(_cooldownManager))    // Skip items that are on a cooldown.
-            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))   // Skip items with a 24-hour average price outside the range 50 - 50,000,000.
-            .AddFilter(new PotentialProfitFilter(200_000, true))    // Skip items with a potential profit less than 200k.
-            .AddFilter(new ReturnOfInvestmentFilter(5))     // Skip items with a return of investment less than 5%.
-            .AddFilter(new MaxVolatilityFilter(15))     // Skip items with a price fluctuation of more than 15% in the last 5 minutes.
+            .AddFilter(new ValidDataFilter())                                           // Skip items with invalid data.
+            .AddFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
+            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range 50 - 50,000,000.
+            .AddFilter(new PotentialProfitFilter(200_000, true))     // Skip items with a potential profit less than 200k.
+            .AddFilter(new ReturnOfInvestmentFilter(5))                   // Skip items with a return of investment less than 5%.
+            .AddFilter(new VolatilityFilter(15))                                        // Skip items with a price fluctuation of more than 15% in the last 30 minutes.
+            .AddFilter(new TransactionVolumeFilter(2_000_000))                          // Skip items with a transaction volume less than 2,000,000 gp.
+            .AddFilter(new TransactionAgeFilter(2, 6))   // Skip items that have not been traded in the last 2 minutes.
+            .AddFilter(new PriceDropFilter(15));                                        // Skip items that have not dropped in price by at least 15%.
     }
     
     
@@ -71,70 +74,62 @@ public sealed class Flipper : IDisposable
     {
         List<ItemFlip> flips = new();
         
+        _filterCollection.InitializeFilters();
+        
         // Loop all available items.
         foreach (CacheEntry entry in _cache.Entries())
         {
-            // Skip if the item is on cooldown.
-            if (_cooldownManager.IsOnCooldown(entry.Item.Id))
-                continue;
-            
-            // Try to calculate a flip for the item.
-            ItemFlip? flip = await TryCalculateFlip(entry);
-
-            // Skip if no flip was found.
-            if (flip == null)
-                continue;
-        
-            // Skip if the item is not flippable.
-            if (!entry.IsPotentiallyFlippable())
+            // Try to get a flip for the item.
+            if (!IsItemFlip(entry, out ItemFlip? flip))
                 continue;
             
             // Add the flip to the list and set the item on cooldown.
-            flips.Add(flip);
+            flips.Add(flip!);
             _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(2));
         }
         
         return flips;
     }
-    
-    
+
+
     /// <summary>
     /// Tries to find a flip for the given item.
     /// </summary>
     /// <param name="entry">The item to calculate a flip for.</param>
-    /// <returns>A flip if one was found, otherwise null.</returns>
-    private static async Task<ItemFlip?> TryCalculateFlip(CacheEntry entry)
+    /// <param name="flip">The found flip, if any.</param>
+    /// <returns>True if a flip was found, false otherwise.</returns>
+    private bool IsItemFlip(CacheEntry entry, out ItemFlip? flip)
     {
-        const double minPriceDropPercentage = 12 / 100.0;
+        if (_filterCollection.PassesAllFilters(entry))
+        {
+            flip = ConstructFlip(entry);
+            return true;
+        }
         
+        flip = null;
+        return false;
+    }
+
+
+    /// <summary>
+    /// Constructs an <see cref="ItemFlip"/> from the given <see cref="CacheEntry"/>.
+    /// </summary>
+    private static ItemFlip ConstructFlip(CacheEntry entry)
+    {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
         // The price the item should be sold at to make a profit.
-        int priceToSellAt = entry.Price1HourAverage.HighestPrice; // NOTE: Possibly use Price1HourAverage.AveragePrice instead of Price1HourAverage.HighestPrice?
-        
+        int priceToSellAt = entry.Price1HourAverage.HighestPrice;
         // Calculate the potential profit.
         int margin = priceToSellAt - priceToBuyAt;
         int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
-        
-        // Skip if potential profit is less than 200k
-        if (potentialProfit is < 200_000)
-            return null;
-        
-        // Check that the lowest component of the latest price has dropped minPriceDropPercentage or more, compared to the last 5 minute average price.
-        if (priceToBuyAt > entry.Price5MinAverageOffset.AveragePrice * (1.0 - minPriceDropPercentage))
-            return null;
-        
-        // The current lowest price should also be less than the 1 hour average price.
-        if (priceToBuyAt > entry.Price1HourAverage.AveragePrice * (1.0 - minPriceDropPercentage))
-            return null;
-        
         // Calculate the ROI percentage
         double roiPercentage = margin / (double)priceToBuyAt * 100;
         
         return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, roiPercentage, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
     }
-    
-    
+
+
     /// <summary>
     /// Refreshes all the latest market data in the cache.
     /// </summary>
@@ -170,6 +165,12 @@ public sealed class Flipper : IDisposable
         else
             Logger.Warn("Failed to load 30 minute average prices");
         
+        ItemAveragePriceDataCollection? average30MinOffsetPrices = await _apiController.Get30MinAveragePrices(Get30MinOffset());
+        if (average30MinOffsetPrices != null)
+            _cache.Update30MinAverageOffsetPrices(average30MinOffsetPrices);
+        else
+            Logger.Warn("Failed to load 30 minute average offset prices");
+        
         ItemAveragePriceDataCollection? average1HourPrices = await _apiController.Get1HourAveragePrices();
         if (average1HourPrices != null)
             _cache.Update1HourAveragePrices(average1HourPrices);
@@ -197,6 +198,16 @@ public sealed class Flipper : IDisposable
         long startOfCurrentPeriod = currentUnixTime / 300;
         long startOfLastPeriod = startOfCurrentPeriod - 1;
         return Utils.UnixTimeToDateTime(startOfLastPeriod * 300);
+    }
+
+
+    private static DateTime Get30MinOffset()
+    {
+        // Get the 30-minute period we are currently in, and subtract 30 minutes to get the previous period.
+        long currentUnixTime = Utils.DateTimeToUnixTime(DateTime.UtcNow);
+        long startOfCurrentPeriod = currentUnixTime / 1800;
+        long startOfLastPeriod = startOfCurrentPeriod - 1;
+        return Utils.UnixTimeToDateTime(startOfLastPeriod * 1800);
     }
 
 
