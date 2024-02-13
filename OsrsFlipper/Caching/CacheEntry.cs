@@ -56,6 +56,16 @@ public class LatestPriceData
     /// </summary>
     public int HighestPrice => BuyPrice > SellPrice ? BuyPrice : SellPrice;
     
+    /// <summary>
+    /// Returns the transaction time of the lowest price of buy and sell.
+    /// </summary>
+    public DateTime LowestPriceTime => BuyPrice < SellPrice ? LastBuyTime : LastSellTime;
+    
+    /// <summary>
+    /// Returns the transaction time of the highest price of buy and sell.
+    /// </summary>
+    public DateTime HighestPriceTime => BuyPrice > SellPrice ? LastSellTime : LastBuyTime;
+    
     public bool IsValid => BuyPrice > 0 && SellPrice > 0;
 }
 
@@ -137,6 +147,21 @@ public class CacheEntry
     public readonly AveragedPriceData Price5MinAverage = new();
     
     /// <summary>
+    /// Pricing data averaged over the last 10 minutes.
+    /// </summary>
+    public readonly AveragedPriceData Price10MinAverage = new();
+    
+    /// <summary>
+    /// Pricing data averaged over the last 30 minutes.
+    /// </summary>
+    public readonly AveragedPriceData Price30MinAverage = new();
+    
+    /// <summary>
+    /// Pricing data averaged over the last 30 minutes, but not including the 30-minute period we are currently in.
+    /// </summary>
+    public readonly AveragedPriceData Price30MinAverageOffset = new();
+    
+    /// <summary>
     /// Pricing data averaged over the last hour.
     /// </summary>
     public readonly AveragedPriceData Price1HourAverage = new();
@@ -155,51 +180,6 @@ public class CacheEntry
     public CacheEntry(ItemData item)
     {
         Item = item;
-    }
-
-
-    /// <summary>
-    /// Checks if the item could potentially be flipped.
-    /// </summary>
-    /// <returns></returns>
-    public bool IsPotentiallyFlippable()
-    {
-        // All items below this price threshold are not worth flipping.
-        const int minPriceThreshold = 50;
-        
-        // If the price has fluctuated more than this threshold in the last hour, it's too volatile to flip.
-        const double volatilityThreshold = 15.0;
-        
-        if (!PriceLatest.IsValid || !Price5MinAverageOffset.IsValid || !Price5MinAverage.IsValid || !Price1HourAverage.IsValid || !Price6HourAverage.IsValid || !Price24HourAverage.IsValid)
-            return false; // Not enough data to determine if flippable.
-        
-        // Check if the item is too cheap to flip.
-        if (PriceLatest.HighestPrice < minPriceThreshold)
-            return false;
-        
-        // Check volatility of the hourly average price. Do not take the latest price into account.
-        //WARN: This volatility check does not work as intended:
-        //WARN: we do not use the true min/max values of a given time period, but the "averaged" min/max values over the period.
-        double priceFluctuationPercentage = CalculateFluctuationPercentage(Price5MinAverageOffset.Margin, Price5MinAverageOffset.AveragePrice);
-        if (priceFluctuationPercentage > volatilityThreshold)
-            return false;
-        
-        // Check that the item has been traded in the last 2 minutes.
-        if (DateTime.UtcNow - PriceLatest.LastUpdateTime > TimeSpan.FromMinutes(2))
-            return false;
-        
-        // The item is flippable.
-        return true;
-    }
-
-
-    private static double CalculateFluctuationPercentage(int margin, double average)
-    {
-        if (average == 0)
-            return 0; // Avoid division by zero.
-
-        double percentageFluctuation = margin / average * 100.0;
-        return Math.Abs(percentageFluctuation); // Ensure a positive percentage.
     }
 
 
@@ -228,6 +208,24 @@ public class CacheEntry
     public void Update5MinAveragePrices(JsonItemAveragePriceData data)
     {
         UpdateAverageData(Price5MinAverage, data);
+    }
+
+
+    public void Update10MinAveragePrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price10MinAverage, data);
+    }
+
+
+    public void Update30MinAveragePrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price30MinAverage, data);
+    }
+
+
+    public void Update30MinAverageOffsetPrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price30MinAverageOffset, data);
     }
 
 

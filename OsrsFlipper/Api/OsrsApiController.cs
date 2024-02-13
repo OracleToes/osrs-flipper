@@ -58,6 +58,24 @@ internal class OsrsApiController : IDisposable
     }
 
     /// <summary>
+    /// Gets the average prices averaged over a 10-minute period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 10-minute period being averaged. Must be divisible by 600 (10 minutes).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get10MinAveragePrices(DateTime timestamp = default)
+    {
+        return await _averagePriceApi.Get10MinAverage(_client, timestamp);
+    }
+
+    /// <summary>
+    /// Gets the average prices averaged over a 30-minute period.
+    /// </summary>
+    /// <param name="timestamp">Represents the beginning of the 30-minute period being averaged. Must be divisible by 1800 (30 minutes).</param>
+    public async Task<ItemAveragePriceDataCollection?> Get30MinAveragePrices(DateTime timestamp = default)
+    {
+        return await _averagePriceApi.Get30MinAverage(_client, timestamp);
+    }
+
+    /// <summary>
     /// Gets the average prices averaged over a 1-hour period.
     /// </summary>
     /// <param name="timestamp">Represents the beginning of the 1-hour period being averaged. Must be divisible by 3600 (1h).</param>

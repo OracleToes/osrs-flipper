@@ -36,9 +36,9 @@ public class ItemCache
     }
 
 
-    public void Update5MinAverageOffsetPrices(ItemAveragePriceDataCollection average5MinPrices)
+    public void Update5MinAverageOffsetPrices(ItemAveragePriceDataCollection prices)
     {
-        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average5MinPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update5MinAverageOffsetPrices(pair.Value);
@@ -46,9 +46,9 @@ public class ItemCache
     }
 
 
-    public void Update5MinAveragePrices(ItemAveragePriceDataCollection average5MinPrices)
+    public void Update5MinAveragePrices(ItemAveragePriceDataCollection prices)
     {
-        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average5MinPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update5MinAveragePrices(pair.Value);
@@ -56,9 +56,39 @@ public class ItemCache
     }
 
 
-    public void Update1HourAveragePrices(ItemAveragePriceDataCollection average1HourPrices)
+    public void Update10MinAveragePrices(ItemAveragePriceDataCollection prices)
     {
-        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average1HourPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
+        {
+            if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
+                entry.Update10MinAveragePrices(pair.Value);
+        }
+    }
+
+
+    public void Update30MinAveragePrices(ItemAveragePriceDataCollection prices)
+    {
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
+        {
+            if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
+                entry.Update30MinAveragePrices(pair.Value);
+        }
+    }
+
+
+    public void Update30MinAverageOffsetPrices(ItemAveragePriceDataCollection prices)
+    {
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
+        {
+            if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
+                entry.Update30MinAverageOffsetPrices(pair.Value);
+        }
+    }
+
+
+    public void Update1HourAveragePrices(ItemAveragePriceDataCollection prices)
+    {
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update1HourAveragePrices(pair.Value);
@@ -66,9 +96,9 @@ public class ItemCache
     }
 
 
-    public void Update6HourAveragePrices(ItemAveragePriceDataCollection average6HourPrices)
+    public void Update6HourAveragePrices(ItemAveragePriceDataCollection prices)
     {
-        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average6HourPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update6HourAveragePrices(pair.Value);
@@ -76,9 +106,9 @@ public class ItemCache
     }
 
 
-    public void Update24HourAveragePrices(ItemAveragePriceDataCollection average24HourPrices)
+    public void Update24HourAveragePrices(ItemAveragePriceDataCollection prices)
     {
-        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in average24HourPrices.Data)
+        foreach (KeyValuePair<int, JsonItemAveragePriceData> pair in prices.Data)
         {
             if (_cache.TryGetValue(pair.Key, out CacheEntry? entry))
                 entry.Update24HourAveragePrices(pair.Value);
