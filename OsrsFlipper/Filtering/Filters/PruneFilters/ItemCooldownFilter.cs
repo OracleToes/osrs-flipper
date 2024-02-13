@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// A filter that checks if an item is currently on cooldown.
 /// </summary>
-internal class ItemCooldownFilter : FlipFilter
+internal class ItemCooldownFilter : PruneFilter
 {
     private readonly CooldownManager _cooldownManager;
 

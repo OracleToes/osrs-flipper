@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// Only includes items that have just dropped in price.
 /// </summary>
-internal class PriceDropFilter : FlipFilter
+internal class PriceDropFilter : PruneFilter
 {
     private readonly int _minPriceDropPercentage;
 

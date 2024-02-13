@@ -3,6 +3,7 @@ using OsrsFlipper.Caching;
 using OsrsFlipper.Data.Mapping;
 using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
+using OsrsFlipper.Data.TimeSeries;
 using OsrsFlipper.Filtering;
 using OsrsFlipper.Filtering.Filters;
 
@@ -44,16 +45,16 @@ public sealed class Flipper : IDisposable
 
         // Add wanted filters to the filter collection.
         _filterCollection
-            .AddFilter(new ValidDataFilter())                                           // Skip items with invalid data.
-            .AddFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
-            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
-            .AddFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
-            .AddFilter(new ReturnOfInvestmentFilter(12))                   // Skip items with a return of investment less than X%.
-            .AddFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
-            .AddFilter(new TransactionVolumeFilter(2_500_000))                          // Skip items with a transaction volume less than X gp.
-            .AddFilter(new TransactionAgeFilter(2, 8))   // Skip items that have not been traded in the last X minutes.
-            .AddFilter(new SpikeRemovalFilter(8))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
-            .AddFilter(new PriceDropFilter(25));                                        // Skip items that have not dropped in price by at least X%.
+            .AddPruneFilter(new ValidDataFilter())                                           // Skip items with invalid data.
+            .AddPruneFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
+            .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
+            .AddPruneFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
+            .AddPruneFilter(new ReturnOfInvestmentFilter(12))                   // Skip items with a return of investment less than X%.
+            .AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
+            .AddPruneFilter(new TransactionVolumeFilter(2_500_000))                          // Skip items with a transaction volume less than X gp.
+            .AddPruneFilter(new TransactionAgeFilter(2, 8))   // Skip items that have not been traded in the last X minutes.
+            .AddPruneFilter(new SpikeRemovalFilter(8))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
+            .AddPruneFilter(new PriceDropFilter(25));                                        // Skip items that have not dropped in price by at least X%.
     }
     
     
@@ -84,14 +85,36 @@ public sealed class Flipper : IDisposable
         _filterCollection.InitializeFilters();
         
         // Loop all available items.
+        int itemsPassedPruneCount = 0;
         foreach (CacheEntry entry in _cache.Entries())
         {
-            // Try to get a flip for the item.
-            if (!IsItemFlip(entry, out ItemDump? flip))
+            // Safety check: If the pruning filters somehow stop working (or there are none), we won't spam the user with messages and the API with requests.
+            if (itemsPassedPruneCount >= 50)
+            {
+                Logger.Warn("Over 50 items passed all pruning filters." +
+                            "This is not generally good, and will result in wasted resources." +
+                            "Stopping dump search.");
+                break;
+            }
+            
+            // Check if the item passes all pruning filters.
+            if (!_filterCollection.PassesPruneTest(entry))
+                continue;
+            itemsPassedPruneCount++;
+            
+            // Get the price history for the item.
+            ItemPriceHistory? history = await GetPriceHistory(entry.Item, TimeSeriesApi.TimeSeriesTimeStep.FiveMinutes);
+            if (history == null)
+                continue;
+
+            // Check if the item passes all flip filters.
+            if (!_filterCollection.PassesFlipTest(entry, history))
                 continue;
             
+            ItemDump dump = ConstructDumpObject(entry, history);
+            
             // Add the flip to the list and set the item on cooldown.
-            flips.Add(flip!);
+            flips.Add(dump);
             _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(_cooldownMinutes));
         }
         
@@ -100,28 +123,9 @@ public sealed class Flipper : IDisposable
 
 
     /// <summary>
-    /// Tries to find a flip for the given item.
-    /// </summary>
-    /// <param name="entry">The item to calculate a flip for.</param>
-    /// <param name="flip">The found flip, if any.</param>
-    /// <returns>True if a flip was found, false otherwise.</returns>
-    private bool IsItemFlip(CacheEntry entry, out ItemDump? flip)
-    {
-        if (_filterCollection.PassesAllFilters(entry))
-        {
-            flip = ConstructFlip(entry);
-            return true;
-        }
-        
-        flip = null;
-        return false;
-    }
-
-
-    /// <summary>
     /// Constructs an <see cref="ItemDump"/> from the given <see cref="CacheEntry"/>.
     /// </summary>
-    private static ItemDump ConstructFlip(CacheEntry entry)
+    private static ItemDump ConstructDumpObject(CacheEntry entry, ItemPriceHistory history)
     {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
@@ -146,7 +150,8 @@ public sealed class Flipper : IDisposable
             entry.PriceLatest.LastBuyTime,
             entry.PriceLatest.LastSellTime,
             entry.Price30MinAverage.AveragePrice,
-            entry.Price6HourAverage.AveragePrice);
+            entry.Price6HourAverage.AveragePrice,
+            history);
     }
 
 
@@ -208,6 +213,12 @@ public sealed class Flipper : IDisposable
             _cache.Update24HourAveragePrices(average24HourPrices);
         else
             Logger.Warn("Failed to load 24 hour average prices");
+    }
+
+
+    private async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesApi.TimeSeriesTimeStep timestep)
+    {
+        return await _apiController.GetPriceHistory(item, timestep);
     }
 
 

@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// A filter that checks if the return of investment is above a certain percentage.
 /// </summary>
-internal class ReturnOfInvestmentFilter : FlipFilter
+internal class ReturnOfInvestmentFilter : PruneFilter
 {
     private readonly int _minRoiPercentage;
     private readonly bool _includeTax;

@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// A filter that checks if an item's 24-hour average price is within a certain range.
 /// </summary>
-internal class Item24HAveragePriceFilter : FlipFilter
+internal class Item24HAveragePriceFilter : PruneFilter
 {
     private readonly int _minPrice;
     private readonly int _maxPrice;

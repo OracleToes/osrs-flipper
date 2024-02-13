@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// A filter that checks if the profit margin is above a certain value.
 /// </summary>
-internal class ProfitMarginFilter : FlipFilter
+internal class ProfitMarginFilter : PruneFilter
 {
     private readonly int _minProfitMargin;
     private readonly bool _includeTax;

@@ -24,8 +24,8 @@ public class TimeSeriesApi : OsrsApi<ItemPriceHistory>
 
     public async Task<ItemPriceHistory?> GetPriceHistory(RestClient client, ItemData item, TimeSeriesTimeStep timestep)
     {
-        _request.AddQueryParameter("id", item.Id.ToString());
-        _request.AddQueryParameter("timestep", timestep.AsString());
+        _request.AddOrUpdateParameter("id", item.Id.ToString());
+        _request.AddOrUpdateParameter("timestep", timestep.AsString());
         
         return await ExecuteRequest(client, _request);
     }

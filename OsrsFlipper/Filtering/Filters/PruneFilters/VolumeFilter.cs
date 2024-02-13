@@ -5,7 +5,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// <summary>
 /// A filter that checks if the item has been traded enough to be considered for flipping.
 /// </summary>
-internal class VolumeFilter : FlipFilter
+internal class VolumeFilter : PruneFilter
 {
     private readonly int _minVolumePerDay;
 

@@ -1,4 +1,5 @@
 ﻿using OsrsFlipper.Data.Mapping;
+using OsrsFlipper.Data.TimeSeries;
 
 namespace OsrsFlipper;
 
@@ -12,11 +13,9 @@ public class ItemDump
     public readonly DateTime LastInstaSellTime;
     public readonly int AveragePrice30Min;
     public readonly int AveragePrice6Hour;
+    public readonly ItemPriceHistory PriceHistory;
     // Calculated values:
     public readonly int? PotentialProfit;
-    public readonly int MarginCurrent;
-    public readonly int Margin30Min;
-    public readonly int Margin6hMin;
     public readonly double RoiPercentage;
 
 
@@ -28,8 +27,9 @@ public class ItemDump
         int instaSellPrice,
         DateTime lastInstaBuyTime,
         DateTime lastInstaSellTime,
+        int averagePrice30Min,
         int averagePrice6Hour,
-        int averagePrice30Min)
+        ItemPriceHistory priceHistory)
     {
         Item = item;
         PotentialProfit = potentialProfit;
@@ -39,8 +39,9 @@ public class ItemDump
         InstaSellPrice = instaSellPrice;
         LastInstaBuyTime = lastInstaBuyTime;
         LastInstaSellTime = lastInstaSellTime;
-        AveragePrice6Hour = averagePrice6Hour;
         AveragePrice30Min = averagePrice30Min;
+        AveragePrice6Hour = averagePrice6Hour;
+        PriceHistory = priceHistory;
     }
 
 

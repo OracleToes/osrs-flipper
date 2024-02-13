@@ -16,4 +16,8 @@
       <ProjectReference Include="..\OsrsFlipper\OsrsFlipper.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Graphing\" />
+    </ItemGroup>
+
 </Project>

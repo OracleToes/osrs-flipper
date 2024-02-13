@@ -6,7 +6,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// Checks if the item has valid price data.
 /// If any of the price data is invalid, the item is not considered for flipping.
 /// </summary>
-internal class ValidDataFilter : FlipFilter
+internal class ValidDataFilter : PruneFilter
 {
     protected override bool CanPassFilter(CacheEntry itemData)
     {

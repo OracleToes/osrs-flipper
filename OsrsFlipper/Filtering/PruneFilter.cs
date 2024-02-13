@@ -1,13 +1,12 @@
 ﻿using OsrsFlipper.Caching;
-using OsrsFlipper.Data.TimeSeries;
 
 namespace OsrsFlipper.Filtering;
 
 /// <summary>
-/// Represents a filter that determines if the item is a potential flip.
-/// <see cref="FlipFilter"/>s have access to the price history of an item.
+/// Represents a filter that an item must pass to be considered for flipping.
+/// <see cref="PruneFilter"/>s are executed before <see cref="FlipFilter"/>s, thus not having access to the price history of an item.
 /// </summary>
-internal abstract class FlipFilter
+internal abstract class PruneFilter
 {
     public int ItemsChecked { get; private set; }
     public int ItemsPassed { get; private set; }
@@ -22,11 +21,11 @@ internal abstract class FlipFilter
     }
 
 
-    public bool CheckPassFilter(CacheEntry itemData, ItemPriceHistory history)
+    public bool CheckPassFilter(CacheEntry itemData)
     {
         ItemsChecked++;
         
-        bool passed = CanPassFilter(itemData, history);
+        bool passed = CanPassFilter(itemData);
         if (passed)
             ItemsPassed++;
         else
@@ -40,7 +39,6 @@ internal abstract class FlipFilter
     /// Checks if the item passes the filter.
     /// </summary>
     /// <param name="itemData">The item to check.</param>
-    /// <param name="history">The price history of the item.</param>
     /// <returns>True if the item passes the filter, false otherwise.</returns>
-    protected abstract bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history);
+    protected abstract bool CanPassFilter(CacheEntry itemData);
 }

@@ -6,7 +6,7 @@ namespace OsrsFlipper.Filtering.Filters;
 /// A filter that checks if the latest high price is close enough or below to the average high price over a certain time period.
 /// This filter tries to remove most spike detections but allow crashes to be detected.
 /// </summary>
-internal class SpikeRemovalFilter : FlipFilter
+internal class SpikeRemovalFilter : PruneFilter
 {
     private readonly int _maxHighPriceIncreasePercentage;
 
