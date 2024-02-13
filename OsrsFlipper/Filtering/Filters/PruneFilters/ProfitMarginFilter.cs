@@ -1,6 +1,6 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// A filter that checks if the profit margin is above a certain value.

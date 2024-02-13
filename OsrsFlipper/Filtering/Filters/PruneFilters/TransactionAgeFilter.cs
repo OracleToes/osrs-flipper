@@ -1,6 +1,6 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// Filters out items that have too old transaction data.

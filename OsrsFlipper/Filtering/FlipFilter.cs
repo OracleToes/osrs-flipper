@@ -22,6 +22,12 @@ internal abstract class FlipFilter
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="itemData"></param>
+    /// <param name="history">Historical price data over a 5-minute interval.</param>
+    /// <returns></returns>
     public bool CheckPassFilter(CacheEntry itemData, ItemPriceHistory history)
     {
         ItemsChecked++;

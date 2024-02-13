@@ -1,6 +1,6 @@
 using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// Checks if the item has valid price data.
