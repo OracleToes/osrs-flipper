@@ -59,7 +59,7 @@ public sealed class Flipper : IDisposable
         // Flip filters are used to further filter out items that have passed the prune filters.
         _filterCollection
             .AddFlipFilter(new SpikeRemovalFilter(8))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
-            .AddFlipFilter(new PriceDropFilter(25));                                        // Skip items that have not dropped in price by at least X%.
+            .AddFlipFilter(new PriceDropFilter(15));                                        // Skip items that have not dropped in price by at least X%.
     }
     
     
