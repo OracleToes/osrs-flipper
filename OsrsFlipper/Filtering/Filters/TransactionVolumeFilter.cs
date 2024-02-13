@@ -22,8 +22,11 @@ internal class TransactionVolumeFilter : FlipFilter
 
     protected override bool CanPassFilter(CacheEntry itemData)
     {
-        int totalTransactionVolume = itemData.Price24HourAverage.BuyVolume * itemData.Price24HourAverage.BuyPrice +
-                                    itemData.Price24HourAverage.SellVolume * itemData.Price24HourAverage.SellPrice;
+        // Experimental: Halve the price's effect to filter out semi-high-value items (20k) with reasonably low volume (1k).
+        int buyTransactionVolume = itemData.Price24HourAverage.BuyVolume * (itemData.Price24HourAverage.BuyPrice / 2);
+        int sellTransactionVolume = itemData.Price24HourAverage.SellVolume * (itemData.Price24HourAverage.SellPrice / 2);
+        
+        int totalTransactionVolume = buyTransactionVolume + sellTransactionVolume;
         return totalTransactionVolume >= _minTransactionVolumePerDay;
     }
 }

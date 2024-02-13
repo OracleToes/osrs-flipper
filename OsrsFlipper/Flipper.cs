@@ -19,7 +19,12 @@ public sealed class Flipper : IDisposable
     /// Contains cached market data for every item in the game.
     /// </summary>
     private readonly ItemCache _cache;
-    
+
+    /// <summary>
+    /// For how long an item should be on cooldown after being detected as a potential flip.
+    /// </summary>
+    private readonly int _cooldownMinutes;
+
     /// <summary>
     /// Manages cooldowns for items (to avoid the same item being detected multiple times in a short period).
     /// </summary>
@@ -31,29 +36,31 @@ public sealed class Flipper : IDisposable
     private readonly FilterCollection _filterCollection = new();
 
 
-    private Flipper(OsrsApiController apiController, ItemCache cache)
+    private Flipper(OsrsApiController apiController, ItemCache cache, int cooldownMinutes)
     {
         _apiController = apiController;
         _cache = cache;
-        
+        _cooldownMinutes = cooldownMinutes;
+
         // Add wanted filters to the filter collection.
         _filterCollection
             .AddFilter(new ValidDataFilter())                                           // Skip items with invalid data.
             .AddFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
-            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range 50 - 50,000,000.
-            .AddFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than 400k.
-            .AddFilter(new ReturnOfInvestmentFilter(5))                   // Skip items with a return of investment less than 5%.
-            .AddFilter(new VolatilityFilter(17))                                        // Skip items with a price fluctuation of more than 15% in the last 30 minutes.
-            .AddFilter(new TransactionVolumeFilter(1_500_000))                          // Skip items with a transaction volume less than 2,000,000 gp.
-            .AddFilter(new TransactionAgeFilter(2, 6))   // Skip items that have not been traded in the last 2 minutes.
-            .AddFilter(new PriceDropFilter(20));                                        // Skip items that have not dropped in price by at least 15%.
+            .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
+            .AddFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
+            .AddFilter(new ReturnOfInvestmentFilter(12))                   // Skip items with a return of investment less than X%.
+            .AddFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
+            .AddFilter(new TransactionVolumeFilter(2_500_000))                          // Skip items with a transaction volume less than X gp.
+            .AddFilter(new TransactionAgeFilter(2, 8))   // Skip items that have not been traded in the last X minutes.
+            .AddFilter(new SpikeRemovalFilter(8))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
+            .AddFilter(new PriceDropFilter(25));                                        // Skip items that have not dropped in price by at least X%.
     }
     
     
     /// <summary>
     /// Creates a new Flipper instance.
     /// </summary>
-    public static async Task<Flipper> Create()
+    public static async Task<Flipper> Create(int cooldownMinutes = 5)
     {
         OsrsApiController apiController = new();
         
@@ -61,7 +68,7 @@ public sealed class Flipper : IDisposable
         
         ItemCache cache = new(mapping);
         
-        Flipper flipper = new Flipper(apiController, cache);
+        Flipper flipper = new Flipper(apiController, cache, cooldownMinutes);
         return flipper;
     }
     
@@ -70,9 +77,9 @@ public sealed class Flipper : IDisposable
     /// Finds all potential dumps.
     /// </summary>
     /// <returns></returns>
-    public async Task<List<ItemFlip>> FindDumps()
+    public async Task<List<ItemDump>> FindDumps()
     {
-        List<ItemFlip> flips = new();
+        List<ItemDump> flips = new();
         
         _filterCollection.InitializeFilters();
         
@@ -80,12 +87,12 @@ public sealed class Flipper : IDisposable
         foreach (CacheEntry entry in _cache.Entries())
         {
             // Try to get a flip for the item.
-            if (!IsItemFlip(entry, out ItemFlip? flip))
+            if (!IsItemFlip(entry, out ItemDump? flip))
                 continue;
             
             // Add the flip to the list and set the item on cooldown.
             flips.Add(flip!);
-            _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(2));
+            _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(_cooldownMinutes));
         }
         
         return flips;
@@ -98,7 +105,7 @@ public sealed class Flipper : IDisposable
     /// <param name="entry">The item to calculate a flip for.</param>
     /// <param name="flip">The found flip, if any.</param>
     /// <returns>True if a flip was found, false otherwise.</returns>
-    private bool IsItemFlip(CacheEntry entry, out ItemFlip? flip)
+    private bool IsItemFlip(CacheEntry entry, out ItemDump? flip)
     {
         if (_filterCollection.PassesAllFilters(entry))
         {
@@ -112,9 +119,9 @@ public sealed class Flipper : IDisposable
 
 
     /// <summary>
-    /// Constructs an <see cref="ItemFlip"/> from the given <see cref="CacheEntry"/>.
+    /// Constructs an <see cref="ItemDump"/> from the given <see cref="CacheEntry"/>.
     /// </summary>
-    private static ItemFlip ConstructFlip(CacheEntry entry)
+    private static ItemDump ConstructFlip(CacheEntry entry)
     {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
@@ -122,11 +129,24 @@ public sealed class Flipper : IDisposable
         int priceToSellAt = entry.Price1HourAverage.HighestPrice;
         // Calculate the potential profit.
         int margin = priceToSellAt - priceToBuyAt;
-        int? potentialProfit = entry.Item.HasBuyLimit ? margin * entry.Item.GeBuyLimit : null;
+        // Calculate the margin with tax.
+        margin = (int)(margin * 0.99);
+        // Calculate the potential profit.
+        int? potentialProfit = entry.Item.HasBuyLimit ? margin * Math.Min(entry.Item.GeBuyLimit, entry.Price24HourAverage.TotalVolume) : null;
         // Calculate the ROI percentage
-        double roiPercentage = margin / (double)priceToBuyAt * 100;
+        double roiPercentage = margin / (double)priceToSellAt * 100;
         
-        return new ItemFlip(entry.Item, potentialProfit, entry.Price24HourAverage.TotalVolume, roiPercentage, entry.PriceLatest.BuyPrice, entry.PriceLatest.SellPrice, entry.PriceLatest.LastBuyTime, entry.PriceLatest.LastSellTime, entry.Price6HourAverage.AveragePrice);
+        return new ItemDump(
+            entry.Item,
+            potentialProfit,
+            entry.Price24HourAverage.TotalVolume,
+            roiPercentage,
+            entry.PriceLatest.BuyPrice,
+            entry.PriceLatest.SellPrice,
+            entry.PriceLatest.LastBuyTime,
+            entry.PriceLatest.LastSellTime,
+            entry.Price30MinAverage.AveragePrice,
+            entry.Price6HourAverage.AveragePrice);
     }
 
 
