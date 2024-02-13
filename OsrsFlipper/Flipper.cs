@@ -41,12 +41,12 @@ public sealed class Flipper : IDisposable
             .AddFilter(new ValidDataFilter())                                           // Skip items with invalid data.
             .AddFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
             .AddFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range 50 - 50,000,000.
-            .AddFilter(new PotentialProfitFilter(200_000, true))     // Skip items with a potential profit less than 200k.
+            .AddFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than 400k.
             .AddFilter(new ReturnOfInvestmentFilter(5))                   // Skip items with a return of investment less than 5%.
-            .AddFilter(new VolatilityFilter(15))                                        // Skip items with a price fluctuation of more than 15% in the last 30 minutes.
-            .AddFilter(new TransactionVolumeFilter(2_000_000))                          // Skip items with a transaction volume less than 2,000,000 gp.
+            .AddFilter(new VolatilityFilter(17))                                        // Skip items with a price fluctuation of more than 15% in the last 30 minutes.
+            .AddFilter(new TransactionVolumeFilter(1_500_000))                          // Skip items with a transaction volume less than 2,000,000 gp.
             .AddFilter(new TransactionAgeFilter(2, 6))   // Skip items that have not been traded in the last 2 minutes.
-            .AddFilter(new PriceDropFilter(15));                                        // Skip items that have not dropped in price by at least 15%.
+            .AddFilter(new PriceDropFilter(20));                                        // Skip items that have not dropped in price by at least 15%.
     }
     
     
