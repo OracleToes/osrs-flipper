@@ -39,9 +39,15 @@ public class ItemData
     public string Name { get; init; } = null!;
     
     public bool HasBuyLimit => GeBuyLimit != 0;
+    
+    public string OsrsWikiLink => $"https://oldschool.runescape.wiki/w/Special:Lookup?type=item&id={Id}";
+    public string OsrsWikiPricesLink => $"https://prices.runescape.wiki/osrs/item/{Id}";
+    public string OsrsCloudPricesLink => $"https://prices.osrs.cloud/item/{Id}";
+    public string OsrsGeDbLink => $"https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj={Id}";
+    public string GeTrackerLink => $"https://www.ge-tracker.com/item/{Id}";
 
     
-    public string GetImageUrl() => Path.Combine(Configuration.OSRS_ITEM_IMAGE_URL, IconFilename);
+    public string GetIconUrl() => $"{Configuration.OSRS_ITEM_IMAGE_URL}/{IconFilename.Replace(" ", "_")}";
 
 
     public override string ToString()

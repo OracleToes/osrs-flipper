@@ -25,14 +25,14 @@ internal static class Program
             await flipper.RefreshCache();
             
             // Find dumps.
-            List<ItemFlip> dumps = await flipper.FindDumps();
+            List<ItemDump> dumps = await flipper.FindDumps();
             
             // Log the dumps.
             if (dumps.Count > 0)
             {
                 Console.WriteLine();
                 Logger.Info("Dump Detections:");
-                foreach (ItemFlip dump in dumps)
+                foreach (ItemDump dump in dumps)
                     Logger.Info(dump);
                 Console.Beep();
             }

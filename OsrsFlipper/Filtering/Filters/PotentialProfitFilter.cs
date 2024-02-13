@@ -45,7 +45,7 @@ internal class PotentialProfitFilter : FlipFilter
             margin = (int)(margin * 0.99);
         
         // Calculate the potential profit.
-        int potentialProfit = margin * itemData.Item.GeBuyLimit;
+        int potentialProfit = margin * Math.Min(itemData.Item.GeBuyLimit, itemData.Price24HourAverage.TotalVolume);
         
         // Check if the potential profit is above the minimum required.
         return potentialProfit >= _minPotentialProfit;
