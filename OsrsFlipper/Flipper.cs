@@ -158,6 +158,18 @@ public sealed class Flipper : IDisposable
         else
             Logger.Warn("Failed to load 5 minute average prices");
         
+        ItemAveragePriceDataCollection? average10MinPrices = await _apiController.Get10MinAveragePrices();
+        if (average10MinPrices != null)
+            _cache.Update10MinAveragePrices(average10MinPrices);
+        else
+            Logger.Warn("Failed to load 10 minute average prices");
+        
+        ItemAveragePriceDataCollection? average30MinPrices = await _apiController.Get30MinAveragePrices();
+        if (average30MinPrices != null)
+            _cache.Update30MinAveragePrices(average30MinPrices);
+        else
+            Logger.Warn("Failed to load 30 minute average prices");
+        
         ItemAveragePriceDataCollection? average1HourPrices = await _apiController.Get1HourAveragePrices();
         if (average1HourPrices != null)
             _cache.Update1HourAveragePrices(average1HourPrices);

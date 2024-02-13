@@ -137,6 +137,16 @@ public class CacheEntry
     public readonly AveragedPriceData Price5MinAverage = new();
     
     /// <summary>
+    /// Pricing data averaged over the last 10 minutes.
+    /// </summary>
+    public readonly AveragedPriceData Price10MinAverage = new();
+    
+    /// <summary>
+    /// Pricing data averaged over the last 30 minutes.
+    /// </summary>
+    public readonly AveragedPriceData Price30MinAverage = new();
+    
+    /// <summary>
     /// Pricing data averaged over the last hour.
     /// </summary>
     public readonly AveragedPriceData Price1HourAverage = new();
@@ -228,6 +238,18 @@ public class CacheEntry
     public void Update5MinAveragePrices(JsonItemAveragePriceData data)
     {
         UpdateAverageData(Price5MinAverage, data);
+    }
+
+
+    public void Update10MinAveragePrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price10MinAverage, data);
+    }
+
+
+    public void Update30MinAveragePrices(JsonItemAveragePriceData data)
+    {
+        UpdateAverageData(Price30MinAverage, data);
     }
 
 
