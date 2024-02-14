@@ -44,6 +44,9 @@ internal static class Program
         }
         await client.LoginAsync(TokenType.Bot, ConfigManager.BotConfig.Token);
         await client.StartAsync();
+        
+        // Register the shutdown event.
+        AppDomain.CurrentDomain.ProcessExit += async (_, _) => await OnShutdown();
 
         // Block the program until it is closed.
         await Task.Delay(-1);
@@ -98,7 +101,7 @@ internal static class Program
                     continue;
 
                 channels.Add(channel);
-                await channel.SendMessageAsync(":moneybag: It's time to make some money! :moneybag:");
+                await channel.SendMessageAsync(":ok: I'm back online!");
             }
         }
 
@@ -111,6 +114,22 @@ internal static class Program
         Logger.Info($"\nFound {channels.Count} channels to post dump updates on.\n");
 
         flipperThread.Start();
+    }
+    
+    
+    private static async Task OnShutdown()
+    {
+        try
+        {
+            foreach (SocketTextChannel channel in channels)
+            {
+                await channel.SendMessageAsync(":tools: Going offline, bye!");
+            }
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e);
+        }
     }
 
 

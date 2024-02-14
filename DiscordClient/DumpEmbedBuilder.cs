@@ -13,7 +13,7 @@ internal static class DumpEmbedBuilder
     {
         EmbedBuilder builder = new()
         {
-            Title = dump.Item.Name.ToUpper(),
+            Title = $":chart_with_downwards_trend: {dump.Item.Name.ToUpper()}",
             Url = dump.Item.OsrsWikiPricesLink,
             Color = GetColor()
         };
