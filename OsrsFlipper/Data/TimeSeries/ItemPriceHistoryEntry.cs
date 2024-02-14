@@ -21,4 +21,14 @@ public class ItemPriceHistoryEntry
     
     [JsonIgnore]
     public DateTime Timestamp => Utils.UnixTimeToDateTime(TimestampUnix!.Value);
+    
+    /// <summary>
+    /// Returns the lowest price of buy and sell.
+    /// </summary>
+    public int? LowestPrice => AvgHighPrice < AvgLowPrice ? AvgHighPrice : AvgLowPrice;
+    
+    /// <summary>
+    /// Returns the highest price of buy and sell.
+    /// </summary>
+    public int? HighestPrice => AvgHighPrice > AvgLowPrice ? AvgHighPrice : AvgLowPrice;
 }

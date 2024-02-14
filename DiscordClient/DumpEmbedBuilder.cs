@@ -9,12 +9,13 @@ internal static class DumpEmbedBuilder
     private static bool colorFlipFlop;
 
 
-    public static Embed BuildEmbed(ItemDump dump)
+    public static Embed BuildEmbed(ItemDump dump, string graphUrl)
     {
         EmbedBuilder builder = new()
         {
             Title = $":chart_with_downwards_trend: {dump.Item.Name.ToUpper()}",
             Url = dump.Item.OsrsWikiPricesLink,
+            ImageUrl = graphUrl,
             Color = GetColor()
         };
 

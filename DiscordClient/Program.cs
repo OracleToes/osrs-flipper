@@ -1,6 +1,8 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using DiscordClient.Configuration;
+using DiscordClient.Graphing;
 using OsrsFlipper;
 
 namespace DiscordClient;
@@ -84,9 +86,18 @@ Commands:
         {
             try
             {
-                Embed embed = DumpEmbedBuilder.BuildEmbed(dump);
                 foreach (SocketTextChannel channel in channels)
+                {
+                    // Get the graph image.
+                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory);
+                    FileAttachment graphAttachment = new(memStream, "graph.png");
+                    RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
+                    string graphUrl = msg.Attachments.First().Url;
+                    
+                    Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
                     await channel.SendMessageAsync(embed: embed);
+                    await msg.DeleteAsync();
+                }
             }
             catch (Exception e)
             {
