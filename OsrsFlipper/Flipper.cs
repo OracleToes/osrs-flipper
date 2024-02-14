@@ -52,7 +52,7 @@ public sealed class Flipper : IDisposable
             .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
             .AddPruneFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
             .AddPruneFilter(new ReturnOfInvestmentFilter(8))                   // Skip items with a return of investment less than X%.
-            .AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
+            //.AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
             .AddPruneFilter(new TransactionVolumeFilter(2_500_000))                          // Skip items with a transaction volume less than X gp.
             .AddPruneFilter(new TransactionAgeFilter(2, 8));  // Skip items that have not been traded in the last X minutes.
             

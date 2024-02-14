@@ -34,7 +34,7 @@ public static class Logger
         if (!EnableVerboseLogging)
             return;
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"Bot@[{DateTime.Now}]: {message}");
+        Console.WriteLine($"Flipper@[{DateTime.Now}]: {message}");
         Console.ResetColor();
     }
 }
