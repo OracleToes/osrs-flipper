@@ -51,15 +51,15 @@ public sealed class Flipper : IDisposable
             .AddPruneFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
             .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
             .AddPruneFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
-            .AddPruneFilter(new ReturnOfInvestmentFilter(12))                  // Skip items with a return of investment less than X%.
+            .AddPruneFilter(new ReturnOfInvestmentFilter(8))                   // Skip items with a return of investment less than X%.
             .AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
             .AddPruneFilter(new TransactionVolumeFilter(2_500_000))                          // Skip items with a transaction volume less than X gp.
             .AddPruneFilter(new TransactionAgeFilter(2, 8));  // Skip items that have not been traded in the last X minutes.
             
         // Flip filters are used to further filter out items that have passed the prune filters.
         _filterCollection
-            .AddFlipFilter(new SpikeRemovalFilter(8))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
-            .AddFlipFilter(new PriceDropFilter(15));                                        // Skip items that have not dropped in price by at least X%.
+            .AddFlipFilter(new SpikeRemovalFilter(12))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
+            .AddFlipFilter(new PriceDropFilter(10));                                        // Skip items that have not dropped in price by at least X%.
     }
     
     
@@ -122,6 +122,7 @@ public sealed class Flipper : IDisposable
             flips.Add(dump);
             _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(_cooldownMinutes));
         }
+        Logger.Verbose($"{itemsPassedPruneCount} items passed all pruning filters.");
         
         return flips;
     }
