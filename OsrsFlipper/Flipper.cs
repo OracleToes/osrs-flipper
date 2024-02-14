@@ -5,13 +5,14 @@ using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
 using OsrsFlipper.Data.TimeSeries;
 using OsrsFlipper.Filtering;
-using OsrsFlipper.Filtering.Filters;
 using OsrsFlipper.Filtering.Filters.PruneFilters;
 
 namespace OsrsFlipper;
 
 public sealed class Flipper : IDisposable
 {
+    private const bool DEBUG_FILTERS = false;
+    
     /// <summary>
     /// The API controller used to fetch data from the OSRS API.
     /// </summary>
@@ -123,6 +124,11 @@ public sealed class Flipper : IDisposable
             _cooldownManager.SetCooldown(entry.Item.Id, TimeSpan.FromMinutes(_cooldownMinutes));
         }
         Logger.Verbose($"{itemsPassedPruneCount} items passed all pruning filters.");
+
+        if (DEBUG_FILTERS)
+        {
+            _filterCollection.DebugFilters();
+        }
         
         return flips;
     }
