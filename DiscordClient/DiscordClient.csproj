@@ -10,10 +10,16 @@
     <ItemGroup>
       <PackageReference Include="Config.Net" Version="5.1.5" />
       <PackageReference Include="Discord.Net" Version="3.13.0" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.1" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\OsrsFlipper\OsrsFlipper.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="assets\**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

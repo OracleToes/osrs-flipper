@@ -1,6 +1,8 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.WebSocket;
 using DiscordClient.Configuration;
+using DiscordClient.Graphing;
 using OsrsFlipper;
 
 namespace DiscordClient;
@@ -13,6 +15,12 @@ internal static class Program
     private static DiscordSocketClient client = null!;
     private static List<SocketTextChannel> channels = null!;
     private static FlipperThread flipperThread = null!;
+
+    private const string HELP_CMD_MESSAGE = @"
+Commands:
+- help: Shows this message.
+- exit: Exits the bot.
+";
 
 
     private static async Task Main()
@@ -46,7 +54,26 @@ internal static class Program
         await client.StartAsync();
 
         // Block the program until it is closed.
-        await Task.Delay(-1);
+        bool shouldExit = false;
+        while (!shouldExit)
+        {
+            string? input = Console.ReadLine();
+            if (input == null)
+                continue;
+            switch (input.ToLower())
+            {
+                case "help":
+                    Logger.Info(HELP_CMD_MESSAGE);
+                    break;
+                case "exit":
+                    await Shutdown();
+                    shouldExit = true;
+                    break;
+                default:
+                    Logger.Warn("Unknown command. Type 'help' for a list of commands.");
+                    break;
+            }
+        }
     }
 
 
@@ -59,9 +86,18 @@ internal static class Program
         {
             try
             {
-                Embed embed = DumpEmbedBuilder.BuildEmbed(dump);
                 foreach (SocketTextChannel channel in channels)
+                {
+                    // Get the graph image.
+                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory);
+                    FileAttachment graphAttachment = new(memStream, "graph.png");
+                    RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
+                    string graphUrl = msg.Attachments.First().Url;
+                    
+                    Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
                     await channel.SendMessageAsync(embed: embed);
+                    await msg.DeleteAsync();
+                }
             }
             catch (Exception e)
             {
@@ -98,7 +134,7 @@ internal static class Program
                     continue;
 
                 channels.Add(channel);
-                await channel.SendMessageAsync(":moneybag: It's time to make some money! :moneybag:");
+                await channel.SendMessageAsync(":ok: I'm back online!");
             }
         }
 
@@ -108,9 +144,30 @@ internal static class Program
             return;
         }
 
-        Logger.Info($"\nFound {channels.Count} channels to post dump updates on.\n");
+        Logger.Info("");
+        Logger.Info($"Found {channels.Count} channels to post dump updates on.\n");
+        Logger.Warn("Please do not close this window manually, but use the 'exit' command to close the bot gracefully.");
+        Logger.Warn("Type 'help' for a list of commands.");
 
         flipperThread.Start();
+    }
+    
+    
+    private static async Task Shutdown()
+    {
+        Logger.Info("Shutting down...");
+        try
+        {
+            foreach (SocketTextChannel channel in channels)
+            {
+                await channel.SendMessageAsync(":tools: Going offline, bye!");
+            }
+            await client.DisposeAsync();
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e);
+        }
     }
 
 

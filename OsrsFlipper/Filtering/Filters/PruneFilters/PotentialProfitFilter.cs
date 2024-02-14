@@ -1,11 +1,11 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// A filter that checks if the potential profit is above a certain value.
 /// </summary>
-internal class PotentialProfitFilter : FlipFilter
+internal class PotentialProfitFilter : PruneFilter
 {
     private readonly int _minPotentialProfit;
     private readonly bool _includeUnknownBuyLimit;

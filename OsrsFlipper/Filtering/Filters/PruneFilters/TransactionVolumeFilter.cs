@@ -1,11 +1,11 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// A filter that checks if the gp transferred between buyers/sellers in a day using this item is enough.
 /// </summary>
-internal class TransactionVolumeFilter : FlipFilter
+internal class TransactionVolumeFilter : PruneFilter
 {
     private readonly int _minTransactionVolumePerDay;
 

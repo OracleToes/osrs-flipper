@@ -1,11 +1,11 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// Filters out items that are too volatile (as in their price changes too much).
 /// </summary>
-internal class VolatilityFilter : FlipFilter
+internal class VolatilityFilter : PruneFilter
 {
     private readonly int _maxVolatilityPercentage;
 

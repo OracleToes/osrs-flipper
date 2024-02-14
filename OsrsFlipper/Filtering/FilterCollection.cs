@@ -1,31 +1,54 @@
 ﻿using OsrsFlipper.Caching;
+using OsrsFlipper.Data.TimeSeries;
 
 namespace OsrsFlipper.Filtering;
 
 internal class FilterCollection
 {
-    private readonly List<FlipFilter> _filters = new();
+    private readonly List<PruneFilter> _pruneFilters = new();
+    private readonly List<FlipFilter> _flipFilters = new();
 
 
-    public FilterCollection AddFilter(FlipFilter filter)
+    public FilterCollection AddPruneFilter(PruneFilter filter)
     {
-        _filters.Add(filter);
+        _pruneFilters.Add(filter);
+        return this;
+    }
+    
+    
+    public FilterCollection AddFlipFilter(FlipFilter filter)
+    {
+        _flipFilters.Add(filter);
         return this;
     }
     
     
     public void InitializeFilters()
     {
-        foreach (FlipFilter filter in _filters)
+        foreach (PruneFilter filter in _pruneFilters)
+            filter.Initialize();
+        foreach (FlipFilter filter in _flipFilters)
             filter.Initialize();
     }
     
     
-    public bool PassesAllFilters(CacheEntry itemData)
+    public bool PassesPruneTest(CacheEntry itemData)
     {
-        foreach (FlipFilter filter in _filters)
+        foreach (PruneFilter filter in _pruneFilters)
         {
             if (!filter.CheckPassFilter(itemData))
+                return false;
+        }
+
+        return true;
+    }
+    
+    
+    public bool PassesFlipTest(CacheEntry itemData, ItemPriceHistory history)
+    {
+        foreach (FlipFilter filter in _flipFilters)
+        {
+            if (!filter.CheckPassFilter(itemData, history))
                 return false;
         }
 

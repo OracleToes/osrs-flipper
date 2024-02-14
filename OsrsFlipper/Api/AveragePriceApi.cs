@@ -73,7 +73,7 @@ public class AveragePriceApi : OsrsApi<ItemAveragePriceDataCollection>
     {
         // Add the unix timestamp to the request
         if (timestamp != default)
-            request.AddQueryParameter("timestamp", Utils.DateTimeToUnixTime(timestamp).ToString());
+            request.AddOrUpdateParameter("timestamp", Utils.DateTimeToUnixTime(timestamp).ToString());
         
         return await ExecuteRequest(client, request);
     }

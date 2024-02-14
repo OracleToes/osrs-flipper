@@ -1,11 +1,11 @@
 ﻿using OsrsFlipper.Caching;
 
-namespace OsrsFlipper.Filtering.Filters;
+namespace OsrsFlipper.Filtering.Filters.PruneFilters;
 
 /// <summary>
 /// A filter that checks if the item has been traded enough to be considered for flipping.
 /// </summary>
-internal class VolumeFilter : FlipFilter
+internal class VolumeFilter : PruneFilter
 {
     private readonly int _minVolumePerDay;
 
