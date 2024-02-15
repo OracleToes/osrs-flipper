@@ -6,13 +6,6 @@ namespace OsrsFlipper.Api;
 
 public class TimeSeriesApi : OsrsApi<ItemPriceHistory>
 {
-    public enum TimeSeriesTimeStep
-    {
-        FiveMinutes,
-        Hour,
-        SixHours,
-        Day
-    }
     private readonly RestRequest _request;
     
     

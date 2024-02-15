@@ -89,7 +89,7 @@ Commands:
                 foreach (SocketTextChannel channel in channels)
                 {
                     // Get the graph image.
-                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory);
+                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory5Min, dump.PriceHistory6Hour, dump.InstaBuyPrice, dump.InstaSellPrice);
                     FileAttachment graphAttachment = new(memStream, "graph.png");
                     RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
                     string graphUrl = msg.Attachments.First().Url;
@@ -97,6 +97,7 @@ Commands:
                     Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
                     await channel.SendMessageAsync(embed: embed);
                     await msg.DeleteAsync();
+                    await Task.Delay(2000);
                 }
             }
             catch (Exception e)

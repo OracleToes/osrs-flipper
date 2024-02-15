@@ -13,7 +13,17 @@ public class ItemDump
     public readonly DateTime LastInstaSellTime;
     public readonly int AveragePrice30Min;
     public readonly int AveragePrice6Hour;
-    public readonly ItemPriceHistory PriceHistory;
+    
+    /// <summary>
+    /// Price history with 5-minute intervals, with up to 365 data points.
+    /// </summary>
+    public readonly ItemPriceHistory PriceHistory5Min;
+
+    /// <summary>
+    /// Price history with 6-hour intervals, with up to 365 data points.
+    /// </summary>
+    public readonly ItemPriceHistory? PriceHistory6Hour;
+
     // Calculated values:
     public readonly int? PotentialProfit;
     public readonly double RoiPercentage;
@@ -29,7 +39,8 @@ public class ItemDump
         DateTime lastInstaSellTime,
         int averagePrice30Min,
         int averagePrice6Hour,
-        ItemPriceHistory priceHistory)
+        ItemPriceHistory priceHistory5Min,
+        ItemPriceHistory? priceHistory6Hour)
     {
         Item = item;
         PotentialProfit = potentialProfit;
@@ -41,7 +52,8 @@ public class ItemDump
         LastInstaSellTime = lastInstaSellTime;
         AveragePrice30Min = averagePrice30Min;
         AveragePrice6Hour = averagePrice6Hour;
-        PriceHistory = priceHistory;
+        PriceHistory5Min = priceHistory5Min;
+        PriceHistory6Hour = priceHistory6Hour;
     }
 
 

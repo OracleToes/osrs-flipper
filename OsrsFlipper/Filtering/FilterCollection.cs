@@ -54,4 +54,18 @@ internal class FilterCollection
 
         return true;
     }
+
+
+    public void DebugFilters()
+    {
+        foreach (PruneFilter filter in _pruneFilters)
+        {
+            Logger.Verbose($"Prune filter {filter.GetType().Name} block count: {filter.ItemsFailed} / {filter.ItemsChecked}");
+        }
+
+        foreach (FlipFilter filter in _flipFilters)
+        {
+            Logger.Verbose($"Flip filter {filter.GetType().Name} block count: {filter.ItemsFailed} / {filter.ItemsChecked}");
+        }
+    }
 }

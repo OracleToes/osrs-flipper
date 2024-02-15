@@ -54,6 +54,12 @@ public class CacheEntry
     public readonly AveragedPriceData Price24HourAverage = new();
 
 
+    /// <summary>
+    /// Potential maximum amount that can be bought in 4 hours.
+    /// </summary>
+    public int MaxBuyAmount => Math.Min(Item.GeBuyLimit, Price24HourAverage.TotalVolume);
+
+
     public CacheEntry(ItemData item)
     {
         Item = item;

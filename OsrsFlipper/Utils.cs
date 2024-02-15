@@ -21,14 +21,14 @@ internal static class Utils
     }
 
 
-    public static string AsString(this TimeSeriesApi.TimeSeriesTimeStep timeStep)
+    public static string AsString(this TimeSeriesTimeStep timeStep)
     {
         return timeStep switch
         {
-            TimeSeriesApi.TimeSeriesTimeStep.FiveMinutes => "5m",
-            TimeSeriesApi.TimeSeriesTimeStep.Hour => "1h",
-            TimeSeriesApi.TimeSeriesTimeStep.SixHours => "6h",
-            TimeSeriesApi.TimeSeriesTimeStep.Day => "24h",
+            TimeSeriesTimeStep.FiveMinutes => "5m",
+            TimeSeriesTimeStep.Hour => "1h",
+            TimeSeriesTimeStep.SixHours => "6h",
+            TimeSeriesTimeStep.Day => "24h",
             _ => throw new ArgumentOutOfRangeException(nameof(timeStep), timeStep, null)
         };
     }
