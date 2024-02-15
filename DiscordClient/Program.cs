@@ -97,6 +97,7 @@ Commands:
                     Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
                     await channel.SendMessageAsync(embed: embed);
                     await msg.DeleteAsync();
+                    await Task.Delay(2000);
                 }
             }
             catch (Exception e)
