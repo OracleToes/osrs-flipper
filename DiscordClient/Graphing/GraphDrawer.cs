@@ -139,13 +139,13 @@ public static class GraphDrawer
         {
             case GraphTimePeriod.DAY:
                 periodCount = 288;
-                periodCountForStartPoint = 72;
+                periodCountForStartPoint = 73;
                 periodText = "last 24h";
                 lastPeriodText = "last 6h ->";
                 break;
             case GraphTimePeriod.MONTH:
                 periodCount = 120;
-                periodCountForStartPoint = 4;
+                periodCountForStartPoint = 5;
                 periodText = "last 30d";
                 lastPeriodText = "last day ->";
                 break;
