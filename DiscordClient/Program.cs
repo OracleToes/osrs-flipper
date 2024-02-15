@@ -89,7 +89,7 @@ Commands:
                 foreach (SocketTextChannel channel in channels)
                 {
                     // Get the graph image.
-                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory, dump.InstaBuyPrice, dump.InstaSellPrice);
+                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory5Min, dump.PriceHistory6Hour, dump.InstaBuyPrice, dump.InstaSellPrice);
                     FileAttachment graphAttachment = new(memStream, "graph.png");
                     RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
                     string graphUrl = msg.Attachments.First().Url;

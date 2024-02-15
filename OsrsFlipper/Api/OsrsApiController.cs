@@ -102,7 +102,7 @@ internal class OsrsApiController : IDisposable
     }
 
 
-    public async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesApi.TimeSeriesTimeStep timestep)
+    public async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesTimeStep timestep)
     {
         return await _timeSeriesApi.GetPriceHistory(_client, item, timestep);
     }

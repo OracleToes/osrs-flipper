@@ -11,7 +11,7 @@ namespace OsrsFlipper;
 
 public sealed class Flipper : IDisposable
 {
-    private const bool DEBUG_FILTERS = false;
+    private const bool DEBUG_FILTERS = true;
     
     /// <summary>
     /// The API controller used to fetch data from the OSRS API.
@@ -48,7 +48,7 @@ public sealed class Flipper : IDisposable
         // Add wanted filters to the filter collection.
         // Prune filters are used to quickly discard items that are not worth considering, and to avoid fetching additional API data for them.
         _filterCollection
-            .AddPruneFilter(new ValidDataFilter())                                           // Skip items with invalid data.
+            //.AddPruneFilter(new InsufficientDataFilter())                                           // Skip items with invalid data.
             .AddPruneFilter(new ItemCooldownFilter(_cooldownManager))                        // Skip items that are on a cooldown.
             .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000))                   // Skip items with a 24-hour average price outside the range X - Y.
             .AddPruneFilter(new PotentialProfitFilter(500_000, true))     // Skip items with a potential profit less than X.
@@ -104,20 +104,25 @@ public sealed class Flipper : IDisposable
             }
             
             // Check if the item passes all pruning filters.
+            if (entry.Item.Id != 2)
             if (!_filterCollection.PassesPruneTest(entry))
                 continue;
             itemsPassedPruneCount++;
             
             // Get the price history for the item.
-            ItemPriceHistory? history = await GetPriceHistory(entry.Item, TimeSeriesApi.TimeSeriesTimeStep.FiveMinutes);
-            if (history == null)
+            ItemPriceHistory? history5Min = await GetPriceHistory(entry.Item, TimeSeriesTimeStep.FiveMinutes);
+            if (history5Min == null)
                 continue;
 
             // Check if the item passes all flip filters.
-            if (!_filterCollection.PassesFlipTest(entry, history))
+            if (entry.Item.Id != 2)
+            if (!_filterCollection.PassesFlipTest(entry, history5Min))
                 continue;
             
-            ItemDump dump = ConstructDumpObject(entry, history);
+            // Get the additional 6-hour price history for the item.
+            ItemPriceHistory? history6Hour = await GetPriceHistory(entry.Item, TimeSeriesTimeStep.SixHours);
+            
+            ItemDump dump = ConstructDumpObject(entry, history5Min, history6Hour);
             
             // Add the flip to the list and set the item on cooldown.
             flips.Add(dump);
@@ -137,7 +142,7 @@ public sealed class Flipper : IDisposable
     /// <summary>
     /// Constructs an <see cref="ItemDump"/> from the given <see cref="CacheEntry"/>.
     /// </summary>
-    private static ItemDump ConstructDumpObject(CacheEntry entry, ItemPriceHistory history)
+    private static ItemDump ConstructDumpObject(CacheEntry entry, ItemPriceHistory history5Min, ItemPriceHistory? history6Hour)
     {
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = entry.PriceLatest.LowestPrice;
@@ -163,7 +168,8 @@ public sealed class Flipper : IDisposable
             entry.PriceLatest.LastSellTime,
             entry.Price30MinAverage.AveragePrice,
             entry.Price6HourAverage.AveragePrice,
-            history);
+            history5Min,
+            history6Hour);
     }
 
 
@@ -228,7 +234,7 @@ public sealed class Flipper : IDisposable
     }
 
 
-    private async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesApi.TimeSeriesTimeStep timestep)
+    private async Task<ItemPriceHistory?> GetPriceHistory(ItemData item, TimeSeriesTimeStep timestep)
     {
         return await _apiController.GetPriceHistory(item, timestep);
     }

@@ -35,7 +35,7 @@ internal class PotentialProfitFilter : PruneFilter
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = itemData.PriceLatest.LowestPrice;
         // The price the item should be sold at to make a profit.
-        int priceToSellAt = itemData.Price1HourAverage.HighestPrice; // NOTE: Possibly use Price1HourAverage.AveragePrice instead of Price1HourAverage.HighestPrice?
+        int priceToSellAt = itemData.Price1HourAverage.HighestPrice;
         
         // Calculate the margin.
         int margin = priceToSellAt - priceToBuyAt;
@@ -45,7 +45,7 @@ internal class PotentialProfitFilter : PruneFilter
             margin = (int)(margin * 0.99);
         
         // Calculate the potential profit.
-        int potentialProfit = margin * Math.Min(itemData.Item.GeBuyLimit, itemData.Price24HourAverage.TotalVolume);
+        int potentialProfit = margin * itemData.MaxBuyAmount;
         
         // Check if the potential profit is above the minimum required.
         return potentialProfit >= _minPotentialProfit;
