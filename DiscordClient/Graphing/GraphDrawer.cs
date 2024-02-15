@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using OsrsFlipper.Caching;
 using OsrsFlipper.Data.TimeSeries;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -42,11 +43,18 @@ public static class GraphDrawer
     /// Draws a price graph from the price history of an item.
     /// </summary>
     /// <param name="history5MinIntervals">Item price history, in 5min intervals. Should contain at least 288x 5min data-points = 24h.</param>
-    public static async Task<MemoryStream> DrawGraph(ItemPriceHistory history5MinIntervals)
+    /// <param name="latestBuy">Latest buy price.</param>
+    /// <param name="latestSell">Latest sell price.</param>
+    public static async Task<MemoryStream> DrawGraph(ItemPriceHistory history5MinIntervals, int latestBuy, int latestSell)
     {
         if (history5MinIntervals.Data.Count < 288)
             throw new ArgumentException("The price history must contain at least 288x 5min data-points = 24h.", nameof(history5MinIntervals));
         List<ItemPriceHistoryEntry> dataPoints = history5MinIntervals.Data.TakeLast(288).ToList();
+        dataPoints.Add(new ItemPriceHistoryEntry
+        {
+            AvgHighPrice = latestBuy,
+            AvgLowPrice = latestSell,
+        });
 
         // 460x80 pixels.
         using Image img = await Image.LoadAsync(GraphBackgroundPath);
@@ -75,9 +83,9 @@ public static class GraphDrawer
         float last6HStartPoint = imageWidth - (imageWidth - 15) / 4f;
         for (int i = 0; i < dataPoints.Count; i++)
         {
-            if (dataPoints[i].LowestPrice != null)
+            if (dataPoints[i].AvgLowPrice != null)
             {
-                PointF point = NormalizedPointFromValues(i, (int)dataPoints[i].LowestPrice!, imageWidth, imageHeight, 15, 15, dataPoints.Count, minValue, maxValue);
+                PointF point = NormalizedPointFromValues(i, (int)dataPoints[i].AvgLowPrice!, imageWidth, imageHeight, 15, 15, dataPoints.Count, minValue, maxValue);
 
                 if (i == 288 - 72)
                     last6HStartPoint = point.X;
@@ -85,9 +93,9 @@ public static class GraphDrawer
                 graphPointsLow.Add(point);
             }
             
-            if (dataPoints[i].HighestPrice != null)
+            if (dataPoints[i].AvgHighPrice != null)
             {
-                PointF point = NormalizedPointFromValues(i, (int)dataPoints[i].HighestPrice!, imageWidth, imageHeight, 15, 15, dataPoints.Count, minValue, maxValue);
+                PointF point = NormalizedPointFromValues(i, (int)dataPoints[i].AvgHighPrice!, imageWidth, imageHeight, 15, 15, dataPoints.Count, minValue, maxValue);
 
                 if (i == 288 - 72)
                     last6HStartPoint = point.X;
