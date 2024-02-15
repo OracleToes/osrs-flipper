@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using OsrsFlipper.Data.Mapping;
+﻿using OsrsFlipper.Data.Mapping;
 using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
 using OsrsFlipper.Data.TimeSeries;

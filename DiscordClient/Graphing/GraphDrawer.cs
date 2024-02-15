@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using OsrsFlipper.Caching;
 using OsrsFlipper.Data.TimeSeries;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
