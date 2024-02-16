@@ -5,6 +5,7 @@ using OsrsFlipper.Data.Price.Average;
 using OsrsFlipper.Data.Price.Latest;
 using OsrsFlipper.Data.TimeSeries;
 using OsrsFlipper.Filtering;
+using OsrsFlipper.Filtering.Filters.FlipFilters;
 using OsrsFlipper.Filtering.Filters.PruneFilters;
 
 namespace OsrsFlipper;
@@ -53,11 +54,11 @@ public sealed class Flipper : IDisposable
             .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000)) // Skip items with a 24-hour average price outside the range X - Y.
             .AddPruneFilter(new TransactionVolumeFilter(2_000_000)) // Skip items with a transaction volume less than X gp.
             .AddPruneFilter(new ReturnOfInvestmentFilter(4)); // Skip items with a return of investment less than X%.
-            //.AddPruneFilter(new PotentialProfitFilter(400_000, true));     // Skip items with a potential profit less than X.
             //.AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
             
         // Flip filters are used to further filter out items that have passed the prune filters.
         _filterCollection
+            .AddFlipFilter(new PotentialProfitFilter(400_000, true))     // Skip items with a potential profit less than X.
             .AddFlipFilter(new SpikeRemovalFilter(12))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
             .AddFlipFilter(new PriceDropFilter(10));                                        // Skip items that have not dropped in price by at least X%.
     }

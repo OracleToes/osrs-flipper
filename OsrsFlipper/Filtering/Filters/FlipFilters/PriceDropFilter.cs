@@ -1,7 +1,7 @@
 ﻿using OsrsFlipper.Caching;
 using OsrsFlipper.Data.TimeSeries;
 
-namespace OsrsFlipper.Filtering.Filters.PruneFilters;
+namespace OsrsFlipper.Filtering.Filters.FlipFilters;
 
 /// <summary>
 /// Only includes items that have just dropped in price.
