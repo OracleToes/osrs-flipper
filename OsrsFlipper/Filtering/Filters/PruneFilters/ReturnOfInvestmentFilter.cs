@@ -28,7 +28,7 @@ internal class ReturnOfInvestmentFilter : PruneFilter
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = itemData.PriceLatest.LowestPrice;
         // The price the item should be sold at to make a profit.
-        int priceToSellAt = itemData.Price1HourAverage.HighestPrice;
+        int priceToSellAt = itemData.Price30MinAverageOffset.HighestPrice;
         
         // Calculate the margin.
         int margin = priceToSellAt - priceToBuyAt;
