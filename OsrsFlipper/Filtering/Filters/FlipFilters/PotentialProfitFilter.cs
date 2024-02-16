@@ -1,11 +1,12 @@
 ﻿using OsrsFlipper.Caching;
+using OsrsFlipper.Data.TimeSeries;
 
-namespace OsrsFlipper.Filtering.Filters.PruneFilters;
+namespace OsrsFlipper.Filtering.Filters.FlipFilters;
 
 /// <summary>
 /// A filter that checks if the potential profit is above a certain value.
 /// </summary>
-internal class PotentialProfitFilter : PruneFilter
+internal class PotentialProfitFilter : FlipFilter
 {
     private readonly int _minPotentialProfit;
     private readonly bool _includeUnknownBuyLimit;
@@ -26,16 +27,22 @@ internal class PotentialProfitFilter : PruneFilter
     }
 
 
-    protected override bool CanPassFilter(CacheEntry itemData)
+    protected override bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history5Min)
     {
         // If the item has no buy limit and we don't want to include items with unknown buy limits, return false.
         if (!itemData.Item.HasBuyLimit)
             return _includeUnknownBuyLimit;
+
+        // Get the median low price over the last hour.
+        const int hours = 1;
+        List<int> highPricesLast6Hours = history5Min.Data.TakeLast(12 * hours).Select(entry => entry.HighestPrice ?? 0).ToList();
+        highPricesLast6Hours.Sort();
+        int medianHighPrice = highPricesLast6Hours[highPricesLast6Hours.Count / 2];
         
         // The price the item should be bought at to make a profit.
         int priceToBuyAt = itemData.PriceLatest.LowestPrice;
         // The price the item should be sold at to make a profit.
-        int priceToSellAt = itemData.Price1HourAverage.HighestPrice;
+        int priceToSellAt = medianHighPrice;
         
         // Calculate the margin.
         int margin = priceToSellAt - priceToBuyAt;

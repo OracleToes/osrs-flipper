@@ -26,13 +26,13 @@ internal abstract class FlipFilter
     /// 
     /// </summary>
     /// <param name="itemData"></param>
-    /// <param name="history">Historical price data over a 5-minute interval.</param>
+    /// <param name="history5Min">Historical price data over a 5-minute interval.</param>
     /// <returns></returns>
-    public bool CheckPassFilter(CacheEntry itemData, ItemPriceHistory history)
+    public bool CheckPassFilter(CacheEntry itemData, ItemPriceHistory history5Min)
     {
         ItemsChecked++;
         
-        bool passed = CanPassFilter(itemData, history);
+        bool passed = CanPassFilter(itemData, history5Min);
         if (passed)
             ItemsPassed++;
         else
@@ -46,7 +46,7 @@ internal abstract class FlipFilter
     /// Checks if the item passes the filter.
     /// </summary>
     /// <param name="itemData">The item to check.</param>
-    /// <param name="history">The price history of the item.</param>
+    /// <param name="history5Min">The price history of the item.</param>
     /// <returns>True if the item passes the filter, false otherwise.</returns>
-    protected abstract bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history);
+    protected abstract bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history5Min);
 }
