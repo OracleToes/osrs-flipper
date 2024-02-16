@@ -28,7 +28,7 @@ internal class PriceDropFilter : FlipFilter
 
         // Get the median low price over the last 3 hours.
         const int hours = 3;
-        List<int> lowPricesLast6Hours = history5Min.Data.TakeLast(5 * 12 * hours).Select(entry => entry.AvgLowPrice ?? 0).ToList();
+        List<int> lowPricesLast6Hours = history5Min.Data.TakeLast(12 * hours).Select(entry => entry.AvgLowPrice ?? 0).ToList();
         lowPricesLast6Hours.Sort();
         int medianLowPrice6Hours = lowPricesLast6Hours[lowPricesLast6Hours.Count / 2];
 
