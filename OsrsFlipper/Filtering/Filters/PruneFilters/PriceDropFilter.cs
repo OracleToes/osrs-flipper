@@ -21,13 +21,14 @@ internal class PriceDropFilter : FlipFilter
     }
 
 
-    protected override bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history)
+    protected override bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history5Min)
     {
         // Get the latest low price.
         int latestLowPrice = itemData.PriceLatest.LowestPrice;
 
-        // Get the median low price over the last 6 hours.
-        List<int> lowPricesLast6Hours = history.Data.TakeLast(72).Select(entry => entry.AvgLowPrice ?? 0).ToList();
+        // Get the median low price over the last 3 hours.
+        const int hours = 3;
+        List<int> lowPricesLast6Hours = history5Min.Data.TakeLast(5 * 12 * hours).Select(entry => entry.AvgLowPrice ?? 0).ToList();
         lowPricesLast6Hours.Sort();
         int medianLowPrice6Hours = lowPricesLast6Hours[lowPricesLast6Hours.Count / 2];
 

@@ -22,7 +22,7 @@ internal class SpikeRemovalFilter : FlipFilter
     }
 
 
-    protected override bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history)
+    protected override bool CanPassFilter(CacheEntry itemData, ItemPriceHistory history5Min)
     {
         // Get the latest high price.
         int latestHighPrice = itemData.PriceLatest.HighestPrice;
@@ -31,7 +31,7 @@ internal class SpikeRemovalFilter : FlipFilter
         for (int i = 0; i < 6; i++)
         {
             // Get the price before the latest price.
-            ItemPriceHistoryEntry historyEntry = history.Data[^(2 + i)];
+            ItemPriceHistoryEntry historyEntry = history5Min.Data[^(2 + i)];
             
             //TODO: Maybe some check for the price being too old?
             

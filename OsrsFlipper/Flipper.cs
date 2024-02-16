@@ -55,7 +55,7 @@ public sealed class Flipper : IDisposable
             .AddPruneFilter(new ReturnOfInvestmentFilter(4))                   // Skip items with a return of investment less than X%.
             //.AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
             .AddPruneFilter(new TransactionVolumeFilter(2_000_000))                          // Skip items with a transaction volume less than X gp.
-            .AddPruneFilter(new TransactionAgeFilter(3, 8));  // Skip items that have not been traded in the last X minutes.
+            .AddPruneFilter(new TransactionAgeFilter(2, 10));  // Skip items that have not been traded in the last X minutes.
             
         // Flip filters are used to further filter out items that have passed the prune filters.
         _filterCollection
