@@ -19,7 +19,7 @@ internal static class Program
     private const string HELP_CMD_MESSAGE = @"
 Commands:
 - help: Shows this message.
-- exit: Exits the bot.
+- stop: Stops the bot.
 ";
 
 
@@ -56,8 +56,8 @@ Commands:
         flipperThread.Start();
 
         // Block the program until it is closed.
-        bool shouldExit = false;
-        while (!shouldExit)
+        bool shouldStop = false;
+        while (!shouldStop)
         {
             string? input = Console.ReadLine();
             if (input == null)
@@ -67,9 +67,9 @@ Commands:
                 case "help":
                     Logger.Info(HELP_CMD_MESSAGE);
                     break;
-                case "exit":
+                case "stop":
                     await Shutdown();
-                    shouldExit = true;
+                    shouldStop = true;
                     break;
                 default:
                     Logger.Warn("Unknown command. Type 'help' for a list of commands.");
@@ -149,7 +149,7 @@ Commands:
 
         Logger.Info("");
         Logger.Info($"Found {channels.Count} channels to post dump updates on.\n");
-        Logger.Warn("Please do not close this window manually, but use the 'exit' command to close the bot gracefully.");
+        Logger.Warn("Please do not close this window manually, but use the 'stop' command to close the bot gracefully.");
         Logger.Warn("Type 'help' for a list of commands.");
     }
     
