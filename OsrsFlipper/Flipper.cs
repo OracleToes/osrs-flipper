@@ -12,7 +12,8 @@ namespace OsrsFlipper;
 
 public sealed class Flipper : IDisposable
 {
-    private const bool DEBUG_FILTERS = false;
+    private const bool DEBUG_FILTERS = true;
+    private const int MAX_PRUNE_PASS_COUNT = 75;
     
     /// <summary>
     /// The API controller used to fetch data from the OSRS API.
@@ -50,9 +51,9 @@ public sealed class Flipper : IDisposable
         // Prune filters are used to quickly discard items that are not worth considering, and to avoid fetching additional API data for them.
         _filterCollection
             .AddPruneFilter(new ItemCooldownFilter(_cooldownManager)) // Skip items that are on a cooldown.
-            .AddPruneFilter(new TransactionAgeFilter(2, 10)) // Skip items that have not been traded in the last X minutes.
+            .AddPruneFilter(new TransactionAgeFilter(2, 8)) // Skip items that have not been traded in the last X minutes.
             .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000)) // Skip items with a 24-hour average price outside the range X - Y.
-            .AddPruneFilter(new TransactionVolumeFilter(2_000_000)) // Skip items with a transaction volume less than X gp.
+            .AddPruneFilter(new TransactionVolumeFilter(3_000_000)) // Skip items with a transaction volume less than X gp.
             .AddPruneFilter(new ReturnOfInvestmentFilter(4)); // Skip items with a return of investment less than X%.
             //.AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
             
@@ -67,7 +68,7 @@ public sealed class Flipper : IDisposable
     /// <summary>
     /// Creates a new Flipper instance.
     /// </summary>
-    public static async Task<Flipper> Create(int cooldownMinutes = 5)
+    public static async Task<Flipper> Create(int cooldownMinutes = 8)
     {
         OsrsApiController apiController = new();
         
@@ -95,10 +96,10 @@ public sealed class Flipper : IDisposable
         foreach (CacheEntry entry in _cache.Entries())
         {
             // Safety check: If the pruning filters somehow stop working (or there are none), we won't spam the user with messages and the API with requests.
-            if (itemsPassedPruneCount >= 50)
+            if (itemsPassedPruneCount >= MAX_PRUNE_PASS_COUNT)
             {
-                Logger.Warn("Over 50 items passed all pruning filters." +
-                            "This is not generally good, and will result in wasted resources." +
+                Logger.Warn($"Over {MAX_PRUNE_PASS_COUNT} items passed all pruning filters. " +
+                            "This is generally not good, and will result in wasted resources. " +
                             "Stopping dump search.");
                 break;
             }
