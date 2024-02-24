@@ -28,8 +28,8 @@ public static class GraphDrawer
 
     static GraphDrawer()
     {
-        const string fontPath = @"assets\fonts\runescape_uf.ttf";
-        const string graphBackgroundPath = @"assets\textures\graph_background.png";
+        string fontPath = Path.Combine("assets", "fonts", "runescape_uf.ttf");
+        string graphBackgroundPath = Path.Combine("assets", "textures", "graph_background.png");
 
         string executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
         GraphBackgroundPath = Path.Combine(executingAssemblyPath, graphBackgroundPath);
