@@ -53,6 +53,8 @@ Commands:
         await client.LoginAsync(TokenType.Bot, ConfigManager.BotConfig.Token);
         await client.StartAsync();
 
+        flipperThread.Start();
+
         // Block the program until it is closed.
         bool shouldExit = false;
         while (!shouldExit)
@@ -149,8 +151,6 @@ Commands:
         Logger.Info($"Found {channels.Count} channels to post dump updates on.\n");
         Logger.Warn("Please do not close this window manually, but use the 'exit' command to close the bot gracefully.");
         Logger.Warn("Type 'help' for a list of commands.");
-
-        flipperThread.Start();
     }
     
     

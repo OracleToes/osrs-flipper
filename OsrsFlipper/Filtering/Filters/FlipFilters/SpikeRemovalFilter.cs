@@ -27,24 +27,24 @@ internal class SpikeRemovalFilter : FlipFilter
         // Get the latest high price.
         int latestHighPrice = itemData.PriceLatest.HighestPrice;
 
-        // Check the last 30 minutes (6 * 5min data points).
-        for (int i = 0; i < 6; i++)
+        // Check the last 15 minutes (3 * 5min data points).
+        for (int i = 0; i < 3; i++)
         {
             // Get the price before the latest price.
             ItemPriceHistoryEntry historyEntry = history5Min.Data[^(2 + i)];
             
             //TODO: Maybe some check for the price being too old?
             
-            int? historicalPrice = historyEntry.AvgHighPrice;
+            int? historicalPrice = historyEntry.HighestPrice;
             
             if (historicalPrice == null)
                 return false;
 
             // Calculate the percentage increase from the previous price to the latest price.
-            double percentageIncreaseFromHistory = ((double)latestHighPrice / historicalPrice.Value - 1) * 100;
+            double percentageIncreaseFromHistorical = ((double)latestHighPrice / historicalPrice.Value * 100) - 100d;
 
             // If the percentage increase is significantly high, consider it a price spike.
-            if (percentageIncreaseFromHistory > _maxHighPriceIncreasePercentage)
+            if (percentageIncreaseFromHistorical > _maxHighPriceIncreasePercentage)
                 return false;
         }
 
