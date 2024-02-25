@@ -14,7 +14,7 @@ internal static class Program
     {
         Logger.Info("Starting...");
 
-        using Flipper flipper = await Flipper.Create();
+        using Flipper flipper = await Flipper.Create(Flipper.Config.Default());
 
         Logger.Info("Started.");
         Console.Beep();

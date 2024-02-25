@@ -25,8 +25,8 @@ internal class TransactionAgeFilter : PruneFilter
 
     protected override bool CanPassFilter(CacheEntry itemData)
     {
-        bool isLowRecent = DateTime.UtcNow - itemData.PriceLatest.LowestPriceTime <= TimeSpan.FromMinutes(_maxLowAgeMinutes);
-        bool isHighRecent = DateTime.UtcNow - itemData.PriceLatest.HighestPriceTime <= TimeSpan.FromMinutes(_maxHighAgeMinutes);
+        bool isLowRecent = _maxLowAgeMinutes < 0 || DateTime.UtcNow - itemData.PriceLatest.LowestPriceTime <= TimeSpan.FromMinutes(_maxLowAgeMinutes);
+        bool isHighRecent = _maxHighAgeMinutes < 0 || DateTime.UtcNow - itemData.PriceLatest.HighestPriceTime <= TimeSpan.FromMinutes(_maxHighAgeMinutes);
         
         return isLowRecent && isHighRecent;
     }

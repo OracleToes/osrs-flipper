@@ -31,7 +31,7 @@ Commands:
         channels = new List<SocketTextChannel>();
         
         // Init the flipper thread.
-        flipperThread = new FlipperThread();
+        flipperThread = new FlipperThread(ConfigManager.GetFlipperConfig());
         flipperThread.OnDumpsUpdated += OnDumpsUpdated;
         
         // Init the discord client.

@@ -4,6 +4,7 @@ namespace OsrsFlipper;
 
 public sealed class FlipperThread : IDisposable
 {
+    private readonly Flipper.Config _config;
     private readonly float _updateIntervalSeconds;
     private readonly Thread _thread;
     private Flipper _flipper = null!;
@@ -13,8 +14,9 @@ public sealed class FlipperThread : IDisposable
     public ConcurrentQueue<ItemDump> Dumps { get; } = new();
 
 
-    public FlipperThread(float updateIntervalSeconds = 20f)
+    public FlipperThread(Flipper.Config config, float updateIntervalSeconds = 20f)
     {
+        _config = config;
         _updateIntervalSeconds = updateIntervalSeconds;
         _thread = new Thread(Run);
     }
@@ -36,7 +38,7 @@ public sealed class FlipperThread : IDisposable
 
     private async void Run()
     {
-        _flipper = await Flipper.Create();
+        _flipper = await Flipper.Create(_config);
         
         while (!_shouldStop)
         {
