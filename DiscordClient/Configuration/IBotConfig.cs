@@ -12,4 +12,7 @@ public interface IBotConfig
     
     [Option(Alias = "dumps_channel_name", DefaultValue = "dumps")]
     public string DumpTargetChannelName { get; set; }
+    
+    [Option(Alias = "generated_media_channel_name", DefaultValue = "generated-media")]
+    public string GeneratedMediaTargetChannelName { get; set; }
 }

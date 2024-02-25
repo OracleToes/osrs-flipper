@@ -34,6 +34,7 @@ public static class ConfigManager
             BotConfig.Token = BotConfig.Token;
             BotConfig.Owners = BotConfig.Owners;
             BotConfig.DumpTargetChannelName = BotConfig.DumpTargetChannelName;
+            BotConfig.GeneratedMediaTargetChannelName = BotConfig.GeneratedMediaTargetChannelName;
             Logger.Warn("Bot configuration file not found. Generating a new one...");
         }
 

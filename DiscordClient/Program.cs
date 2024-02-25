@@ -13,7 +13,7 @@ namespace DiscordClient;
 internal static class Program
 {
     private static DiscordSocketClient client = null!;
-    private static List<SocketTextChannel> channels = null!;
+    private static List<(SocketTextChannel dumpChannel, SocketTextChannel mediaChannel)> channels = null!;
     private static FlipperThread flipperThread = null!;
 
     private const string HELP_CMD_MESSAGE = @"
@@ -28,7 +28,7 @@ Commands:
         ConfigManager.Initialize();
 
         // Init the channels we want to receive updates on.
-        channels = new List<SocketTextChannel>();
+        channels = new List<(SocketTextChannel dumpChannel, SocketTextChannel mediaChannel)>();
         
         // Init the flipper thread.
         flipperThread = new FlipperThread(ConfigManager.GetFlipperConfig());
@@ -91,31 +91,25 @@ Commands:
                 // Get the graph image.
                 MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory5Min, dump.PriceHistory6Hour, dump.InstaBuyPrice, dump.InstaSellPrice);
                 FileAttachment graphAttachment = new(memStream, "graph.png");
-                List<(string graphUrl, ulong messageId, SocketTextChannel channel)> graphUrls = new();
-                
-                // Send the graph images to all channels.
-                foreach (SocketTextChannel channel in channels)
-                {
-                    RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
-                    string graphUrl = msg.Attachments.First().Url;
-                    graphUrls.Add((graphUrl, msg.Id, channel));
-                }
                 
                 // Send the embeds.
-                foreach ((string graphUrl, ulong msgId, SocketTextChannel channel) in graphUrls)
+                foreach ((SocketTextChannel dumpChannel, SocketTextChannel mediaChannel) in channels)
                 {
+                    // Send the graph images.
+                    RestUserMessage graphMsg = await mediaChannel.SendFileAsync(graphAttachment);
+                    string graphUrl = graphMsg.Attachments.First().Url;
+                    
+                    // Send the dump embeds.
                     Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
-                    await channel.SendMessageAsync(embed: embed);
+                    RestUserMessage dumpMsg = await dumpChannel.SendMessageAsync(embed: embed);
+                    
+                    // Edit the graph message to include a reference to the dump message.
+                    await graphMsg.ModifyAsync(msg => msg.Content = $"[Dump: {dump.Item.Name}]({dumpMsg.GetJumpUrl()})");
                 }
                 
                 // Allow Discord some time to process the messages.
                 await Task.Delay(2000);
                 
-                // Delete the graph images.
-                foreach ((string graphUrl, ulong messageId, SocketTextChannel channel) in graphUrls)
-                {
-                    await channel.DeleteMessageAsync(messageId);
-                }
                 await memStream.DisposeAsync();
             }
             catch (Exception e)
@@ -147,19 +141,35 @@ Commands:
         // Register the channels to post dump updates on.
         foreach (SocketGuild guild in client.Guilds)
         {
+            SocketTextChannel? dumpChannel = null;
+            SocketTextChannel? generatedMediaChannel = null;
             foreach (SocketTextChannel channel in guild.TextChannels)
             {
-                if (channel.Name != ConfigManager.BotConfig.DumpTargetChannelName)
+                if (channel.Name == ConfigManager.BotConfig.DumpTargetChannelName)
+                {
+                    dumpChannel = channel;
                     continue;
+                }
 
-                channels.Add(channel);
-                await channel.SendMessageAsync(":ok: I'm back online!");
+                if (channel.Name == ConfigManager.BotConfig.GeneratedMediaTargetChannelName)
+                {
+                    generatedMediaChannel = channel;
+                }
             }
+            
+            if (dumpChannel == null || generatedMediaChannel == null)
+            {
+                Logger.Warn($"Could not find the required channels ('{ConfigManager.BotConfig.DumpTargetChannelName}' and '{ConfigManager.BotConfig.GeneratedMediaTargetChannelName}') in guild '{guild.Name}'.");
+                continue;
+            }
+            
+            channels.Add((dumpChannel, generatedMediaChannel));
+            await dumpChannel.SendMessageAsync(":ok: I'm back online!");
         }
 
         if (channels.Count == 0)
         {
-            Logger.Error($"No channels found with the name '{ConfigManager.BotConfig.DumpTargetChannelName}'.");
+            Logger.Error("No guilds to post dump updates on!");
             return;
         }
 
@@ -175,9 +185,9 @@ Commands:
         Logger.Info("Shutting down...");
         try
         {
-            foreach (SocketTextChannel channel in channels)
+            foreach ((SocketTextChannel dumpChannel, SocketTextChannel _) in channels)
             {
-                await channel.SendMessageAsync(":tools: Going offline, bye!");
+                await dumpChannel.SendMessageAsync(":tools: Going offline, bye!");
             }
             await client.DisposeAsync();
         }
