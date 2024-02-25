@@ -39,36 +39,116 @@ public sealed class Flipper : IDisposable
     /// Contains all the filters that an item must pass to be considered for flipping.
     /// </summary>
     private readonly FilterCollection _filterCollection = new();
+    
+    
+    public struct Config
+    {
+        public int PruneCooldownMinutes;
+        public int PruneMaxTransactionAgeLow;
+        public int PruneMaxTransactionAgeHigh;
+        public int PruneAveragePrice24HMin;
+        public int PruneAveragePrice24HMax;
+        public int PruneTransactionVolumeMin;
+        public int PruneRoiMinPercentage;
+        public int PruneAverageVolatility30MinMaxPercentage;
+        public int FlipPotentialProfitMin;
+        public bool FlipPotentialProfitIncludeUnknownLimit;
+        public int MaxHighIncreasePercentage;
+        public int PriceDropMin;
+        
+        
+        public static Config Default()
+        {
+            return new Config
+            {
+                PruneCooldownMinutes = 8,
+                PruneMaxTransactionAgeLow = 2,
+                PruneMaxTransactionAgeHigh = 8,
+                PruneAveragePrice24HMin = 50,
+                PruneAveragePrice24HMax = 50_000_000,
+                PruneTransactionVolumeMin = 3_000_000,
+                PruneRoiMinPercentage = 4,
+                PruneAverageVolatility30MinMaxPercentage = 12,
+                FlipPotentialProfitMin = 600_000,
+                FlipPotentialProfitIncludeUnknownLimit = true,
+                MaxHighIncreasePercentage = 12,
+                PriceDropMin = 10
+            };
+        }
 
 
-    private Flipper(OsrsApiController apiController, ItemCache cache, int cooldownMinutes)
+        public override string ToString()
+        {
+            return $"PruneCooldownMinutes: {PruneCooldownMinutes}, " +
+                   $"PruneMaxTransactionAgeLow: {PruneMaxTransactionAgeLow}, " +
+                   $"PruneMaxTransactionAgeHigh: {PruneMaxTransactionAgeHigh}, " +
+                   $"PruneAveragePrice24HMin: {PruneAveragePrice24HMin}, " +
+                   $"PruneAveragePrice24HMax: {PruneAveragePrice24HMax}, " +
+                   $"PruneTransactionVolumeMin: {PruneTransactionVolumeMin}, " +
+                   $"PruneRoiMinPercentage: {PruneRoiMinPercentage}, " +
+                   $"PruneAverageVolatility30MinMaxPercentage: {PruneAverageVolatility30MinMaxPercentage}, " +
+                   $"FlipPotentialProfitMin: {FlipPotentialProfitMin}, " +
+                   $"FlipPotentialProfitIncludeUnknownLimit: {FlipPotentialProfitIncludeUnknownLimit}, " +
+                   $"MaxHighIncreasePercentage: {MaxHighIncreasePercentage}, " +
+                   $"PriceDropMin: {PriceDropMin}";
+        }
+    }
+
+
+    private Flipper(OsrsApiController apiController, ItemCache cache, Config config)
     {
         _apiController = apiController;
         _cache = cache;
-        _cooldownMinutes = cooldownMinutes;
+        _cooldownMinutes = config.PruneCooldownMinutes;
 
         // Add wanted filters to the filter collection.
         // Prune filters are used to quickly discard items that are not worth considering, and to avoid fetching additional API data for them.
-        _filterCollection
-            .AddPruneFilter(new ItemCooldownFilter(_cooldownManager)) // Skip items that are on a cooldown.
-            .AddPruneFilter(new TransactionAgeFilter(2, 8)) // Skip items that have not been traded in the last X minutes.
-            .AddPruneFilter(new Item24HAveragePriceFilter(50, 50_000_000)) // Skip items with a 24-hour average price outside the range X - Y.
-            .AddPruneFilter(new TransactionVolumeFilter(3_000_000)) // Skip items with a transaction volume less than X gp.
-            .AddPruneFilter(new ReturnOfInvestmentFilter(4)); // Skip items with a return of investment less than X%.
-            //.AddPruneFilter(new VolatilityFilter(12))                                        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
+        
+        // Skip items that are on a cooldown.
+        if (config.PruneCooldownMinutes > 0)
+            _filterCollection.AddPruneFilter(new ItemCooldownFilter(_cooldownManager));                         
+        
+        // Skip items that have not been traded in the last X minutes.
+        if (config.PruneMaxTransactionAgeLow > 0 || config.PruneMaxTransactionAgeHigh > 0)
+            _filterCollection.AddPruneFilter(new TransactionAgeFilter(config.PruneMaxTransactionAgeLow, config.PruneMaxTransactionAgeHigh));
+        
+        // Skip items with a 24-hour average price outside the range X - Y.
+        if (config.PruneAveragePrice24HMin > 0 || config.PruneAveragePrice24HMax > 0)
+            _filterCollection.AddPruneFilter(new Item24HAveragePriceFilter(config.PruneAveragePrice24HMin, config.PruneAveragePrice24HMax));
+        
+        // Skip items with a transaction volume less than X gp.
+        if (config.PruneTransactionVolumeMin > 0)
+            _filterCollection.AddPruneFilter(new TransactionVolumeFilter(config.PruneTransactionVolumeMin));
+        
+        // Skip items with a return of investment less than X%.
+        if (config.PruneRoiMinPercentage > 0)
+            _filterCollection.AddPruneFilter(new ReturnOfInvestmentFilter(config.PruneRoiMinPercentage));
+        
+        // Skip items with a price fluctuation of more than X% in the last 30 minutes.
+        if (config.PruneAverageVolatility30MinMaxPercentage > 0)
+            _filterCollection.AddPruneFilter(new VolatilityFilter(12));
             
         // Flip filters are used to further filter out items that have passed the prune filters.
-        _filterCollection
-            .AddFlipFilter(new PotentialProfitFilter(400_000, true))     // Skip items with a potential profit less than X.
-            .AddFlipFilter(new SpikeRemovalFilter(12))             // Skip items that have spiked in price by more than X% in the last 30 minutes.
-            .AddFlipFilter(new PriceDropFilter(10));                                        // Skip items that have not dropped in price by at least X%.
+        // Skip items with a potential profit less than X.
+        if (config.FlipPotentialProfitMin > 0)
+            _filterCollection.AddFlipFilter(new PotentialProfitFilter(config.FlipPotentialProfitMin, config.FlipPotentialProfitIncludeUnknownLimit));
+        
+        // Skip items that have spiked in price by more than X% in the last 30 minutes.
+        if (config.MaxHighIncreasePercentage > 0)
+            _filterCollection.AddFlipFilter(new SpikeRemovalFilter(config.MaxHighIncreasePercentage));
+        
+        // Skip items that have not dropped in price by at least X%.
+        if (config.PriceDropMin > 0)
+            _filterCollection.AddFlipFilter(new PriceDropFilter(config.PriceDropMin));
+        
+        Logger.Info($"Flipper initialized with config:\n{config}");
     }
     
     
     /// <summary>
     /// Creates a new Flipper instance.
     /// </summary>
-    public static async Task<Flipper> Create(int cooldownMinutes = 8)
+    public static async Task<Flipper> Create(Config config)
     {
         OsrsApiController apiController = new();
         
@@ -76,7 +156,7 @@ public sealed class Flipper : IDisposable
         
         ItemCache cache = new(mapping);
         
-        Flipper flipper = new Flipper(apiController, cache, cooldownMinutes);
+        Flipper flipper = new Flipper(apiController, cache, config);
         return flipper;
     }
     
