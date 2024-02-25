@@ -185,7 +185,7 @@ public sealed class Flipper : IDisposable
             }
             
             // Check if the item passes all pruning filters.
-            if (entry.Item.Id != 2)
+            // DEBUG-TEST: if (entry.Item.Id != 2)
             if (!_filterCollection.PassesPruneTest(entry))
                 continue;
             itemsPassedPruneCount++;
@@ -196,7 +196,7 @@ public sealed class Flipper : IDisposable
                 continue;
 
             // Check if the item passes all flip filters.
-            if (entry.Item.Id != 2)
+            // DEBUG-TEST: if (entry.Item.Id != 2)
             if (!_filterCollection.PassesFlipTest(entry, history5Min))
                 continue;
             
