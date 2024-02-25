@@ -88,19 +88,35 @@ Commands:
         {
             try
             {
+                // Get the graph image.
+                MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory5Min, dump.PriceHistory6Hour, dump.InstaBuyPrice, dump.InstaSellPrice);
+                FileAttachment graphAttachment = new(memStream, "graph.png");
+                List<(string graphUrl, ulong messageId, SocketTextChannel channel)> graphUrls = new();
+                
+                // Send the graph images to all channels.
                 foreach (SocketTextChannel channel in channels)
                 {
-                    // Get the graph image.
-                    MemoryStream memStream = await GraphDrawer.DrawGraph(dump.PriceHistory5Min, dump.PriceHistory6Hour, dump.InstaBuyPrice, dump.InstaSellPrice);
-                    FileAttachment graphAttachment = new(memStream, "graph.png");
                     RestUserMessage msg = await channel.SendFileAsync(graphAttachment);
                     string graphUrl = msg.Attachments.First().Url;
-                    
+                    graphUrls.Add((graphUrl, msg.Id, channel));
+                }
+                
+                // Send the embeds.
+                foreach ((string graphUrl, ulong msgId, SocketTextChannel channel) in graphUrls)
+                {
                     Embed embed = DumpEmbedBuilder.BuildEmbed(dump, graphUrl);
                     await channel.SendMessageAsync(embed: embed);
-                    await msg.DeleteAsync();
-                    await Task.Delay(2000);
                 }
+                
+                // Allow Discord some time to process the messages.
+                await Task.Delay(2000);
+                
+                // Delete the graph images.
+                foreach ((string graphUrl, ulong messageId, SocketTextChannel channel) in graphUrls)
+                {
+                    await channel.DeleteMessageAsync(messageId);
+                }
+                await memStream.DisposeAsync();
             }
             catch (Exception e)
             {
