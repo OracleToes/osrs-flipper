@@ -13,18 +13,18 @@ internal static class DumpEmbedBuilder
     {
         EmbedBuilder builder = new()
         {
-            Title = $":chart_with_downwards_trend: {dump.Item.Name.ToUpper()}",
+            Title = $"Dump!\n{dump.Item.Name}: {dump.BuyingPrice.SeparateThousands()} gp -{dump.RoiPercentage:F1}%",
             Url = dump.Item.OsrsWikiPricesLink,
             ImageUrl = graphUrl,
             Color = GetColor()
         };
 
-        builder.AddField("> **[-LINKS-]**", GetLinks(), false);
+        builder.AddField("> Links", GetLinks(), false);
         builder.WithThumbnailUrl(dump.Item.GetIconUrl());
         
-        builder.AddField("> **[-CALCULATED-VALUES-]**", GetCalculatedData(), false);
+        builder.AddField("> Info", GetCalculatedData(), false);
         
-        builder.AddField("> **[-PRICES-]**", GetPrices(), false);
+        builder.AddField("> Prices", GetPrices(), false);
         
         builder.WithFooter("osrs-flipper");
         builder.WithCurrentTimestamp();
@@ -35,9 +35,10 @@ internal static class DumpEmbedBuilder
         {
             // Build a string with all the links.
             StringBuilder sb = new();
-            sb.Append($"*[WIKI]({dump.Item.OsrsWikiLink})");
-            sb.Append($" | [WIKI-PRICES]({dump.Item.OsrsWikiPricesLink})");
-            sb.Append($" | [GE-TRACKER]({dump.Item.GeTrackerLink})*");
+            sb.Append($"*[Wiki]({dump.Item.OsrsWikiLink})");
+            sb.Append($" | [Wiki Prices]({dump.Item.OsrsWikiPricesLink})");
+            sb.Append($" | [Osrs Exchange]({dump.Item.OsrsExchangeLink})");
+            sb.Append($" | [Rune Capital]({dump.Item.RuneCapitalLink})*");
             return sb.ToString();
         }
 
@@ -49,10 +50,10 @@ internal static class DumpEmbedBuilder
             string volume = dump.TotalVolume24H.SeparateThousands();
             string limit = dump.Item.HasBuyLimit ? dump.Item.GeBuyLimit.SeparateThousands() : "Unknown";
 
-            sb.Append($"**Volume (24h):** *`{volume}`*\n");
-            sb.Append($"**Limit:** *`{limit}`*\n");
-            sb.Append($"**Max Profit:** *`{profit}` gp*\n");
-            sb.Append($"**ROI:** *`{dump.RoiPercentage:F1}`%*");
+            sb.Append($"`Limit:      {limit}`\n");
+            sb.Append($"`24h Vol:    {volume}`\n");
+            sb.Append($"`Max Profit: {profit}` gp\n");
+            sb.Append($"`ROI:        {dump.RoiPercentage:F1}`%");
             return sb.ToString();
         }
 
@@ -60,10 +61,10 @@ internal static class DumpEmbedBuilder
         {
             // Build a string with all the prices.
             StringBuilder sb = new();
-            sb.Append($"**Buy:** *`{dump.InstaBuyPrice.SeparateThousands()}` gp* <t:{Utils.DateTimeToUnixTime(dump.LastInstaBuyTime)}:R>\n");
-            sb.Append($"**Sell:** *`{dump.InstaSellPrice.SeparateThousands()}` gp* <t:{Utils.DateTimeToUnixTime(dump.LastInstaSellTime)}:R>\n");
-            sb.Append($"**30min Avg:** *`{dump.AveragePrice30Min.SeparateThousands()}` gp*\n");
-            sb.Append($"**6h Avg:** *`{dump.AveragePrice6Hour.SeparateThousands()}` gp*");
+            sb.Append($"`6hr Avg:    {dump.AveragePrice6Hour.SeparateThousands()}` gp\n");
+            sb.Append($"`30m Avg:    {dump.AveragePrice30Min.SeparateThousands()}` gp\n\n");
+            sb.Append($"`Buy:        {dump.InstaBuyPrice.SeparateThousands()}` gp <t:{Utils.DateTimeToUnixTime(dump.LastInstaBuyTime)}:R>\n");
+            sb.Append($"`Sell:       {dump.InstaSellPrice.SeparateThousands()}` gp <t:{Utils.DateTimeToUnixTime(dump.LastInstaSellTime)}:R>\n");
             return sb.ToString();
         }
 
@@ -71,7 +72,7 @@ internal static class DumpEmbedBuilder
         {
             // Flip flop between two colors, so every other embed has a different color.
             colorFlipFlop = !colorFlipFlop;
-            return colorFlipFlop ? Color.DarkRed : Color.DarkBlue;
+            return colorFlipFlop ? Color.DarkRed : Color.DarkGreen;
         }
     }
 }

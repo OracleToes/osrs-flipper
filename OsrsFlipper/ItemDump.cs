@@ -28,6 +28,8 @@ public class ItemDump
     public readonly int? PotentialProfit;
     public readonly double RoiPercentage;
 
+    public readonly int BuyingPrice;
+
 
     public ItemDump(ItemData item,
         int? potentialProfit,
@@ -40,7 +42,8 @@ public class ItemDump
         int averagePrice30Min,
         int averagePrice6Hour,
         ItemPriceHistory priceHistory5Min,
-        ItemPriceHistory? priceHistory6Hour)
+        ItemPriceHistory? priceHistory6Hour,
+        int buyingPrice)
     {
         Item = item;
         PotentialProfit = potentialProfit;
@@ -54,12 +57,13 @@ public class ItemDump
         AveragePrice6Hour = averagePrice6Hour;
         PriceHistory5Min = priceHistory5Min;
         PriceHistory6Hour = priceHistory6Hour;
+        BuyingPrice = buyingPrice;
     }
 
 
     public override string ToString()
     {
-        string potentialProfit = PotentialProfit.HasValue ? $"{PotentialProfit.Value.SeparateThousands()}gp" : "Unknown";
-        return $"{Item.Name}: {potentialProfit} potential profit. {RoiPercentage:F1}% ROI. (InstaBuy: {InstaBuyPrice.SeparateThousands()}gp, InstaSell: {InstaSellPrice.SeparateThousands()}gp, 6h avg: {AveragePrice6Hour.SeparateThousands()}gp). [Wiki Prices]({Item.OsrsWikiPricesLink})";
+        string potentialProfit = PotentialProfit.HasValue ? $"{PotentialProfit.Value.SeparateThousands()} gp" : "Unknown";
+        return $"\n\n\n{Item.Name}: {BuyingPrice.SeparateThousands()} gp\npotential profit: {potentialProfit}\nROI: {RoiPercentage:F1}%\nInstaBuy:  {InstaBuyPrice.SeparateThousands()} gp\nInstaSell: {InstaSellPrice.SeparateThousands()} gp\n\n6h avg:    {AveragePrice6Hour.SeparateThousands()} gp)\n24h Volume: {TotalVolume24H.SeparateThousands()}\n\n[Prices]({Item.RuneCapitalLink})";
     }
 }

@@ -23,8 +23,8 @@ internal class TransactionVolumeFilter : PruneFilter
     protected override bool CanPassFilter(CacheEntry itemData)
     {
         // Experimental: Halve the price's effect to filter out semi-high-value items (20k) with reasonably low volume (1k).
-        int buyTransactionVolume = itemData.Price24HourAverage.BuyVolume * (itemData.Price24HourAverage.BuyPrice / 2);
-        int sellTransactionVolume = itemData.Price24HourAverage.SellVolume * (itemData.Price24HourAverage.SellPrice / 2);
+        int buyTransactionVolume = itemData.Price24HourAverage.BuyVolume;
+        int sellTransactionVolume = itemData.Price24HourAverage.SellVolume;
         
         int totalTransactionVolume = buyTransactionVolume + sellTransactionVolume;
         return totalTransactionVolume >= _minTransactionVolumePerDay;

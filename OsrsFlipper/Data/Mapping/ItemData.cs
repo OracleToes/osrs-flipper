@@ -45,6 +45,8 @@ public class ItemData
     public string OsrsCloudPricesLink => $"https://prices.osrs.cloud/item/{Id}";
     public string OsrsGeDbLink => $"https://secure.runescape.com/m=itemdb_oldschool/viewitem?obj={Id}";
     public string GeTrackerLink => $"https://www.ge-tracker.com/item/{Id}";
+    public string OsrsExchangeLink => $"https://www.osrs.exchange/item/{Name.Replace(" ", "-")}";
+    public string RuneCapitalLink => $"https://dev.rune.capital/item/{Id}";
 
     
     public string GetIconUrl() => $"{Configuration.OSRS_ITEM_IMAGE_URL}/{IconFilename.Replace(" ", "_")}";

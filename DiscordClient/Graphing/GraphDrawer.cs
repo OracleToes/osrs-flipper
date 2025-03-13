@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using MathNet.Numerics;
 using OsrsFlipper.Data.TimeSeries;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -19,12 +18,11 @@ public static class GraphDrawer
         DAY,
         MONTH
     }
-
+    
     private static readonly string GraphBackgroundPath;
     private static readonly Pen GraphingPenLow;
     private static readonly Pen GraphingPenHigh;
     private static readonly Pen HighlightingPen;
-    private static readonly Pen RegressionPen;
     private static readonly Font Font;
 
 
@@ -41,10 +39,9 @@ public static class GraphDrawer
         FontFamily family = fontCollection.Add(fPath);
         Font = new Font(family, 14, FontStyle.Regular);
 
-        GraphingPenLow = new SolidPen(new SolidBrush(Color.Chartreuse), 1f);
-        GraphingPenHigh = new SolidPen(new SolidBrush(Color.Orange), 1f);
+        GraphingPenLow = new SolidPen(new SolidBrush(Color.Lime), 1f);
+        GraphingPenHigh = new SolidPen(new SolidBrush(Color.Crimson), 1f);
         HighlightingPen = new SolidPen(new SolidBrush(Color.CadetBlue), 3f);
-        RegressionPen = new SolidPen(new SolidBrush(Color.Red), 1f);
     }
 
 
@@ -61,8 +58,8 @@ public static class GraphDrawer
         int latestBuy,
         int latestSell)
     {
-        const int graphPointsPerDay = 288; // Assuming 5min intervals.
-
+        const int graphPointsPerDay = 288;  // Assuming 5min intervals.
+        
         if (history5MinIntervals.Data.Count < graphPointsPerDay)
             throw new ArgumentException("The price history must contain at least 288x 5min data-points = 24h.", nameof(history5MinIntervals));
 
@@ -110,7 +107,7 @@ public static class GraphDrawer
     private static async Task<Image> CreateGraph(List<ItemPriceHistoryEntry> dataPoints, GraphTimePeriod timePeriod)
     {
         const int graphPadding = 15;
-
+        
         // 460x80 pixels.
         Image img = await Image.LoadAsync(GraphBackgroundPath);
         int imageWidth = img.Width;
@@ -201,14 +198,10 @@ public static class GraphDrawer
         }
 
         // Construct the graph paths.
-        PathBuilder graphPathLow = new PathBuilder().AddLines(graphPointsLow.ToArray());
-        PathBuilder graphPathHigh = new PathBuilder().AddLines(graphPointsHigh.ToArray());
-        
-        // Construct the regression path.
-        PathBuilder regressionPath = DrawRegressionLine(dataPoints, imageWidth, imageHeight, graphPadding, minValue, maxValue);
-        
-        // Draw the regression curve.
-        img.Mutate(ctx => ctx.Draw(RegressionPen, regressionPath.Build()));
+        PathBuilder graphPathLow = new();
+        PathBuilder graphPathHigh = new();
+        graphPathLow.AddLines(graphPointsLow.ToArray());
+        graphPathHigh.AddLines(graphPointsHigh.ToArray());
 
         // Draw the graphs.
         img.Mutate(ctx => ctx.Draw(GraphingPenLow, graphPathLow.Build()));
@@ -235,48 +228,6 @@ public static class GraphDrawer
         img.Mutate(ctx => ctx.DrawText(periodText, Font, Color.Wheat, new PointF(10, 5)));
 
         return img;
-    }
-
-
-    private static PathBuilder DrawRegressionLine(List<ItemPriceHistoryEntry> dataPoints, int imageWidth, int imageHeight, int graphPadding, int minValue, int maxValue)
-    {
-        // Prepare data for polynomial regression
-        double[] xValues = dataPoints.Select((v, i) => (double)i).ToArray();
-        int previous = dataPoints[0].AvgHighPrice ?? 0;
-        double[] yValues = dataPoints.Select(v =>
-        {
-            int prev = previous;
-            previous = v.AvgHighPrice ?? previous;
-            if (v.AvgHighPrice != null)
-                return (double)v.AvgHighPrice;
-            return previous;
-        }).ToArray();
-
-        // Fit data to a 2nd degree polynomial (change the 2 to a higher number for a higher degree polynomial)
-        double[] coefficients = Fit.Polynomial(xValues, yValues, 2);
-
-        // Create a function that represents the polynomial
-        Func<double, double> polynomial = x => coefficients[0] + coefficients[1] * x + coefficients[2] * Math.Pow(x, 2);
-
-        // Calculate points for the regression curve
-        List<PointF> regressionPoints = xValues.Select(x => 
-            NormalizedPointFromValues(
-                (int)x, 
-                (int)polynomial(x), 
-                imageWidth, 
-                imageHeight, 
-                graphPadding, 
-                graphPadding, 
-                dataPoints.Count, 
-                minValue, 
-                maxValue)
-        ).ToList();
-
-        // Construct the regression path
-        PathBuilder regressionPath = new();
-        regressionPath.AddLines(regressionPoints.ToArray());
-
-        return regressionPath;
     }
 
 

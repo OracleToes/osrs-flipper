@@ -13,7 +13,7 @@ namespace OsrsFlipper;
 public sealed class Flipper : IDisposable
 {
     private const bool DEBUG_FILTERS = true;
-    private const int MAX_PRUNE_PASS_COUNT = 75;
+    private const int MAX_PRUNE_PASS_COUNT = 100;
     
     /// <summary>
     /// The API controller used to fetch data from the OSRS API.
@@ -79,18 +79,18 @@ public sealed class Flipper : IDisposable
 
         public override string ToString()
         {
-            return $"PruneCooldownMinutes: {PruneCooldownMinutes}, " +
-                   $"PruneMaxTransactionAgeLow: {PruneMaxTransactionAgeLow}, " +
-                   $"PruneMaxTransactionAgeHigh: {PruneMaxTransactionAgeHigh}, " +
-                   $"PruneAveragePrice24HMin: {PruneAveragePrice24HMin}, " +
-                   $"PruneAveragePrice24HMax: {PruneAveragePrice24HMax}, " +
-                   $"PruneTransactionVolumeMin: {PruneTransactionVolumeMin}, " +
-                   $"PruneRoiMinPercentage: {PruneRoiMinPercentage}, " +
-                   $"PruneAverageVolatility30MinMaxPercentage: {PruneAverageVolatility30MinMaxPercentage}, " +
-                   $"FlipPotentialProfitMin: {FlipPotentialProfitMin}, " +
-                   $"FlipPotentialProfitIncludeUnknownLimit: {FlipPotentialProfitIncludeUnknownLimit}, " +
-                   $"MaxHighIncreasePercentage: {MaxHighIncreasePercentage}, " +
-                   $"PriceDropMin: {PriceDropMin}";
+            return $"PruneCooldownMinutes:       {PruneCooldownMinutes} \n" +
+                   $"PruneMaxTransactionAgeLow:  {PruneMaxTransactionAgeLow} \n" +
+                   $"PruneMaxTransactionAgeHigh: {PruneMaxTransactionAgeHigh} \n" +
+                   $"PruneAveragePrice24HMin:    {PruneAveragePrice24HMin} \n" +
+//                 $"PruneAveragePrice24HMax:    {PruneAveragePrice24HMax} \n" +
+                   $"PruneTransactionVolumeMin:  {PruneTransactionVolumeMin} \n" +
+                   $"PruneRoiMinPercentage:      {PruneRoiMinPercentage} \n" +
+//                 $"PruneAverageVolatility30MinMaxPercentage: {PruneAverageVolatility30MinMaxPercentage} \n" +
+                   $"FlipPotentialProfitMin:     {FlipPotentialProfitMin} \n" +
+                   $"FlipPotentialProfitIncludeUnknownLimit: {FlipPotentialProfitIncludeUnknownLimit} \n" +
+                   $"MaxHighIncreasePercentage:  {MaxHighIncreasePercentage} \n" +
+                   $"PriceDropMin:               {PriceDropMin}";
         }
     }
 
@@ -113,7 +113,7 @@ public sealed class Flipper : IDisposable
             _filterCollection.AddPruneFilter(new TransactionAgeFilter(config.PruneMaxTransactionAgeLow, config.PruneMaxTransactionAgeHigh));
         
         // Skip items with a 24-hour average price outside the range X - Y.
-        if (config.PruneAveragePrice24HMin > 0 || config.PruneAveragePrice24HMax > 0)
+        if (config.PruneAveragePrice24HMin > 0)
             _filterCollection.AddPruneFilter(new Item24HAveragePriceFilter(config.PruneAveragePrice24HMin, config.PruneAveragePrice24HMax));
         
         // Skip items with a transaction volume less than X gp.
@@ -125,8 +125,8 @@ public sealed class Flipper : IDisposable
             _filterCollection.AddPruneFilter(new ReturnOfInvestmentFilter(config.PruneRoiMinPercentage));
         
         // Skip items with a price fluctuation of more than X% in the last 30 minutes.
-        if (config.PruneAverageVolatility30MinMaxPercentage > 0)
-            _filterCollection.AddPruneFilter(new VolatilityFilter(12));
+//        if (config.PruneAverageVolatility30MinMaxPercentage > 0)
+//            _filterCollection.AddPruneFilter(new VolatilityFilter(12));
             
         // Flip filters are used to further filter out items that have passed the prune filters.
         // Skip items with a potential profit less than X.
@@ -250,7 +250,8 @@ public sealed class Flipper : IDisposable
             entry.Price30MinAverage.AveragePrice,
             entry.Price6HourAverage.AveragePrice,
             history5Min,
-            history6Hour);
+            history6Hour,
+            priceToBuyAt);
     }
 
 

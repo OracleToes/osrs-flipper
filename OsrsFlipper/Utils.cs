@@ -37,7 +37,7 @@ internal static class Utils
     public static string SeparateThousands(this int value)
     {
         NumberFormatInfo largeNumberFormat = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
-        largeNumberFormat.NumberGroupSeparator = " ";
+        largeNumberFormat.NumberGroupSeparator = ",";
         return value.ToString("#,0", largeNumberFormat);
     }
 }
